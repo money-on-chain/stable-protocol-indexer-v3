@@ -1,6 +1,6 @@
-# Stable Protocol Indexer v2
+# Stable Protocol Indexer v3 (Multicollateral)
 
-## Warning: This is only for version 2 of the main contracts. 
+## Warning: This is only for version 3 of the main contracts. 
 
 ## Introduction
 
