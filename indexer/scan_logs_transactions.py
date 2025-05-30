@@ -33,7 +33,12 @@ from .events import EventMocQueueTCMinted, \
     EventOMOCSupportersPayEarnings, \
     EventOMOCSupportersWithdraw, \
     EventOMOCSupportersWithdrawStake, \
-    EventOMOCVotingMachineVoteEvent
+    EventOMOCVotingMachineVoteEvent, \
+    EventMocMultiCollateralGuardMicroLiquidationExecuted, \
+    EventMocMultiCollateralGuardPartialLiquidationExecuted, \
+    EventMocMultiCollateralGuardBucketLiquidated, \
+    EventMocMultiCollateralGuardBucketChange, \
+    EventMocPeggedTokenChange
 
 
 from .base.decoder import LogDecoder, UnknownEvent
@@ -72,6 +77,11 @@ class ScanLogsTransactions:
     def init_log_decoder(self):
 
         contracts_log_decoder = dict()
+
+        contracts_log_decoder[self.contracts_addresses['MocMultiCollateralGuard'].lower()] = LogDecoder(
+            self.contracts_loaded['MocMultiCollateralGuard'].sc
+        )
+
         for ca_index, ca in enumerate(self.options['collateral']):
             contracts_log_decoder[self.contracts_addresses['Moc'][ca_index].lower()] = LogDecoder(
                 self.contracts_loaded['Moc'][ca_index].sc
@@ -142,8 +152,51 @@ class ScanLogsTransactions:
 
         d_event = dict()
 
+        d_event[self.contracts_addresses["MocMultiCollateralGuard"].lower()] = {
+            "MicroLiquidationExecuted": EventMocMultiCollateralGuardMicroLiquidationExecuted(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info,
+                ),
+            "PartialLiquidationExecuted": EventMocMultiCollateralGuardPartialLiquidationExecuted(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info,
+            ),
+            "BucketLiquidated": EventMocMultiCollateralGuardBucketLiquidated(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info,
+            ),
+            "BucketChange": EventMocMultiCollateralGuardBucketChange(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info,
+            ),
+        }
+
         for ca_index, ca in enumerate(self.options['collateral']):
             d_event[self.contracts_addresses["Moc"][ca_index].lower()] = {
+                "PeggedTokenChange": EventMocPeggedTokenChange(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info,
+                    ca_index),
                 "LiqTPRedeemed": EventMocLiqTPRedeemed(
                     self.options,
                     self.connection_helper,

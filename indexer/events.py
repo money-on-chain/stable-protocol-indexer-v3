@@ -45,6 +45,324 @@ class BaseEvent:
         return dict(**parsed_receipt, **fields)
 
 
+
+class EventMocMultiCollateralGuardMicroLiquidationExecuted(BaseEvent):
+
+    def __init__(self,
+                 options,
+                 connection_helper,
+                 contracts_loaded,
+                 contracts_addresses,
+                 filter_contracts_addresses,
+                 block_info):
+
+        self.options = options
+        self.connection_helper = connection_helper
+        self.contracts_loaded = contracts_loaded
+        self.filter_contracts_addresses = filter_contracts_addresses
+        self.block_info = block_info
+
+        super().__init__(options,
+                         connection_helper,
+                         contracts_loaded,
+                         contracts_addresses,
+                         filter_contracts_addresses,
+                         block_info)
+
+
+    def parse_event_and_save(self, parsed_receipt, decoded_event):
+
+        parsed = self.parse_event(parsed_receipt, decoded_event)
+
+        # get collection
+        collection = self.connection_helper.mongo_collection('event_MocMultiCollateralGuard_MicroLiquidationExecuted')
+
+        tx_hash = parsed['hash']
+        log_index = parsed['logIndex']
+        id_event = "{0}:{1}".format(tx_hash, log_index)
+
+        d_event = dict()
+        d_event["hash"] = tx_hash
+        d_event["id_event"] = id_event
+        d_event["blockNumber"] = int(parsed["blockNumber"])
+        d_event["executor_"] = sanitize_address(parsed["executor_"])
+        d_event["originBucket"] = sanitize_address(parsed["originBucket"])
+        d_event["targetBucket_"] = sanitize_address(parsed["targetBucket_"])
+        d_event["targetTP_"] = sanitize_address(parsed["targetTP_"])
+        d_event["qACtoSwap_"] = parsed["qACtoSwap_"]
+        d_event["qACOut_"] = parsed["qACOut_"]
+        d_event["qTPtoRebalance_"] = parsed["qTPtoRebalance_"]
+        d_event["qACExecFee_"] = parsed["qACExecFee_"]
+        d_event["createdAt"] = parsed["createdAt"]
+        d_event["lastUpdatedAt"] = datetime.datetime.now()
+
+        # remove old document with only hash as id and replace with id_event as unique id
+        remove_query = {"hash": d_event["hash"], "id_event": {"$exists": False}}
+        if collection.find(remove_query):
+            collection.delete_many(remove_query)
+
+        collection.find_one_and_update(
+            {"id_event": d_event["id_event"]},
+            {"$set": d_event},
+            upsert=True)
+
+        log.info("Event :: MocMultiCollateralGuard MicroLiquidationExecuted :: id: {0}".format(d_event["id_event"]))
+        log.info(d_event)
+
+        return d_event, parsed
+
+
+class EventMocMultiCollateralGuardPartialLiquidationExecuted(BaseEvent):
+
+    def __init__(self,
+                 options,
+                 connection_helper,
+                 contracts_loaded,
+                 contracts_addresses,
+                 filter_contracts_addresses,
+                 block_info):
+
+        self.options = options
+        self.connection_helper = connection_helper
+        self.contracts_loaded = contracts_loaded
+        self.filter_contracts_addresses = filter_contracts_addresses
+        self.block_info = block_info
+
+        super().__init__(options,
+                         connection_helper,
+                         contracts_loaded,
+                         contracts_addresses,
+                         filter_contracts_addresses,
+                         block_info)
+
+
+    def parse_event_and_save(self, parsed_receipt, decoded_event):
+
+        parsed = self.parse_event(parsed_receipt, decoded_event)
+
+        # get collection
+        collection = self.connection_helper.mongo_collection('event_MocMultiCollateralGuard_PartialLiquidationExecuted')
+
+        tx_hash = parsed['hash']
+        log_index = parsed['logIndex']
+        id_event = "{0}:{1}".format(tx_hash, log_index)
+
+        d_event = dict()
+        d_event["hash"] = tx_hash
+        d_event["id_event"] = id_event
+        d_event["blockNumber"] = int(parsed["blockNumber"])
+        d_event["executor_"] = sanitize_address(parsed["executor_"])
+        d_event["originBucket"] = sanitize_address(parsed["originBucket"])
+        d_event["targetBucket_"] = sanitize_address(parsed["targetBucket_"])
+        d_event["targetTP_"] = sanitize_address(parsed["targetTP_"])
+        d_event["qACtoSwap_"] = parsed["qACtoSwap_"]
+        d_event["qACOut_"] = parsed["qACOut_"]
+        d_event["qTPtoRebalance_"] = parsed["qTPtoRebalance_"]
+        d_event["qACExecFee_"] = parsed["qACExecFee_"]
+        d_event["createdAt"] = parsed["createdAt"]
+        d_event["lastUpdatedAt"] = datetime.datetime.now()
+
+        # remove old document with only hash as id and replace with id_event as unique id
+        remove_query = {"hash": d_event["hash"], "id_event": {"$exists": False}}
+        if collection.find(remove_query):
+            collection.delete_many(remove_query)
+
+        collection.find_one_and_update(
+            {"id_event": d_event["id_event"]},
+            {"$set": d_event},
+            upsert=True)
+
+        log.info("Event :: MocMultiCollateralGuard PartialLiquidationExecuted :: id: {0}".format(d_event["id_event"]))
+        log.info(d_event)
+
+        return d_event, parsed
+
+
+class EventMocMultiCollateralGuardBucketLiquidated(BaseEvent):
+
+    def __init__(self,
+                 options,
+                 connection_helper,
+                 contracts_loaded,
+                 contracts_addresses,
+                 filter_contracts_addresses,
+                 block_info):
+
+        self.options = options
+        self.connection_helper = connection_helper
+        self.contracts_loaded = contracts_loaded
+        self.filter_contracts_addresses = filter_contracts_addresses
+        self.block_info = block_info
+
+        super().__init__(options,
+                         connection_helper,
+                         contracts_loaded,
+                         contracts_addresses,
+                         filter_contracts_addresses,
+                         block_info)
+
+
+    def parse_event_and_save(self, parsed_receipt, decoded_event):
+
+        parsed = self.parse_event(parsed_receipt, decoded_event)
+
+        # get collection
+        collection = self.connection_helper.mongo_collection('event_MocMultiCollateralGuard_BucketLiquidated')
+
+        tx_hash = parsed['hash']
+        log_index = parsed['logIndex']
+        id_event = "{0}:{1}".format(tx_hash, log_index)
+
+        d_event = dict()
+        d_event["hash"] = tx_hash
+        d_event["id_event"] = id_event
+        d_event["blockNumber"] = int(parsed["blockNumber"])
+        d_event["originBucket"] = sanitize_address(parsed["originBucket"])
+        d_event["createdAt"] = parsed["createdAt"]
+        d_event["lastUpdatedAt"] = datetime.datetime.now()
+
+        # remove old document with only hash as id and replace with id_event as unique id
+        remove_query = {"hash": d_event["hash"], "id_event": {"$exists": False}}
+        if collection.find(remove_query):
+            collection.delete_many(remove_query)
+
+        collection.find_one_and_update(
+            {"id_event": d_event["id_event"]},
+            {"$set": d_event},
+            upsert=True)
+
+        log.info("Event :: MocMultiCollateralGuard BucketLiquidated :: id: {0}".format(d_event["id_event"]))
+        log.info(d_event)
+
+        return d_event, parsed
+
+
+class EventMocMultiCollateralGuardBucketChange(BaseEvent):
+
+    def __init__(self,
+                 options,
+                 connection_helper,
+                 contracts_loaded,
+                 contracts_addresses,
+                 filter_contracts_addresses,
+                 block_info):
+
+        self.options = options
+        self.connection_helper = connection_helper
+        self.contracts_loaded = contracts_loaded
+        self.filter_contracts_addresses = filter_contracts_addresses
+        self.block_info = block_info
+
+        super().__init__(options,
+                         connection_helper,
+                         contracts_loaded,
+                         contracts_addresses,
+                         filter_contracts_addresses,
+                         block_info)
+
+
+    def parse_event_and_save(self, parsed_receipt, decoded_event):
+
+        parsed = self.parse_event(parsed_receipt, decoded_event)
+
+        # get collection
+        collection = self.connection_helper.mongo_collection('event_MocMultiCollateralGuard_BucketChange')
+
+        tx_hash = parsed['hash']
+        log_index = parsed['logIndex']
+        id_event = "{0}:{1}".format(tx_hash, log_index)
+
+        d_event = dict()
+        d_event["hash"] = tx_hash
+        d_event["id_event"] = id_event
+        d_event["blockNumber"] = int(parsed["blockNumber"])
+        d_event["bucketIndex_"] = parsed["bucketIndex_"]
+        d_event["bucket_"] = sanitize_address(parsed["bucket_"])
+        d_event["bucketParams_"] = parsed["bucketParams_"]
+        d_event["mocSwappers"] = parsed["mocSwappers"]
+        d_event["createdAt"] = parsed["createdAt"]
+        d_event["lastUpdatedAt"] = datetime.datetime.now()
+
+        # remove old document with only hash as id and replace with id_event as unique id
+        remove_query = {"hash": d_event["hash"], "id_event": {"$exists": False}}
+        if collection.find(remove_query):
+            collection.delete_many(remove_query)
+
+        collection.find_one_and_update(
+            {"id_event": d_event["id_event"]},
+            {"$set": d_event},
+            upsert=True)
+
+        log.info("Event :: MocMultiCollateralGuard BucketChange :: id: {0}".format(d_event["id_event"]))
+        log.info(d_event)
+
+        return d_event, parsed
+
+
+class EventMocPeggedTokenChange(BaseEvent):
+
+    def __init__(self,
+                 options,
+                 connection_helper,
+                 contracts_loaded,
+                 contracts_addresses,
+                 filter_contracts_addresses,
+                 block_info,
+                 bucket_index):
+
+        self.options = options
+        self.connection_helper = connection_helper
+        self.contracts_loaded = contracts_loaded
+        self.filter_contracts_addresses = filter_contracts_addresses
+        self.block_info = block_info
+        self.bucket_index = bucket_index
+
+        super().__init__(options,
+                         connection_helper,
+                         contracts_loaded,
+                         contracts_addresses,
+                         filter_contracts_addresses,
+                         block_info)
+
+
+    def parse_event_and_save(self, parsed_receipt, decoded_event):
+
+        parsed = self.parse_event(parsed_receipt, decoded_event)
+
+        # get collection
+        collection = self.connection_helper.mongo_collection('event_Moc_PeggedTokenChange')
+
+        tx_hash = parsed['hash']
+        log_index = parsed['logIndex']
+        id_event = "{0}:{1}".format(tx_hash, log_index)
+
+        d_event = dict()
+        d_event["hash"] = tx_hash
+        d_event["id_event"] = id_event
+        d_event["bucket_index"] = self.bucket_index
+        d_event["blockNumber"] = int(parsed["blockNumber"])
+        d_event["i_"] = parsed["i_"]
+        d_event["tpTokenAddress_"] = sanitize_address(parsed["tpTokenAddress_"])
+        d_event["peggedTokenParams_"] = parsed["peggedTokenParams_"]
+        d_event["createdAt"] = parsed["createdAt"]
+        d_event["lastUpdatedAt"] = datetime.datetime.now()
+
+        # remove old document with only hash as id and replace with id_event as unique id
+        remove_query = {"hash": d_event["hash"], "id_event": {"$exists": False}}
+        if collection.find(remove_query):
+            collection.delete_many(remove_query)
+
+        collection.find_one_and_update(
+            {"id_event": d_event["id_event"]},
+            {"$set": d_event},
+            upsert=True)
+
+        log.info("Event :: Moc PeggedTokenChange :: bucket: {0} :: id: {1}".format(self.bucket_index, d_event["id_event"]))
+        log.info(d_event)
+
+        return d_event, parsed
+
+
 class EventMocLiqTPRedeemed(BaseEvent):
 
     def __init__(self,
@@ -468,13 +786,13 @@ class EventMocQueueOperationError(BaseEvent):
         # Issue: ROC-990: Operation limited by the flux capacitor should stay in the queue and not fail
         # msg: Max flux capacitor operation reached
         # Constant: MAX_FLUX_CAPACITOR_REACHED
-        if d_oper["errorCode_"] == "0x0db483ca":
-            # skip if is a problem with flux capacitor stay on the queue, so set queue status
-            log.warning("Event :: OperationError :: bucket: {0} :: operId_: {1} Skipping... Fluxcapacitor limitation not failing".format(
-                self.bucket_index, d_event["operId_"]))
-            d_oper["status"] = 0
+        # if d_oper["errorCode_"] == "0x0db483ca":
+        #     # skip if is a problem with flux capacitor stay on the queue, so set queue status
+        #     log.warning("Event :: OperationError :: bucket: {0} :: operId_: {1} Skipping... Fluxcapacitor limitation not failing".format(
+        #         self.bucket_index, d_event["operId_"]))
+        #     d_oper["status"] = 0
 
-        operation = collection.find_one({"operId_": d_oper["operId_"]})
+        operation = collection.find_one({"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]})
         if operation:
             if operation['status'] >= 1:
                 # if executed don't update
@@ -483,7 +801,7 @@ class EventMocQueueOperationError(BaseEvent):
                 return d_oper, parsed
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -579,7 +897,7 @@ class EventMocQueueUnhandledError(BaseEvent):
         d_oper["confirmationTime"] = None
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
-        operation = collection.find_one({"operId_": d_oper["operId_"]})
+        operation = collection.find_one({"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]})
         if operation:
             if operation['status'] >= 1:
                 # if executed don't update
@@ -588,7 +906,7 @@ class EventMocQueueUnhandledError(BaseEvent):
                 return d_oper, parsed
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -830,7 +1148,7 @@ class EventMocQueueOperationQueued(BaseEvent):
         d_oper["confirmationTime"] = None
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
-        operation = collection.find_one({"operId_": d_oper["operId_"]})
+        operation = collection.find_one({"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]})
         if operation:
             if operation['status'] >= 1:
                 # if executed don't update
@@ -839,7 +1157,7 @@ class EventMocQueueOperationQueued(BaseEvent):
                 return d_oper, parsed
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1014,7 +1332,7 @@ class EventMocQueueTCMinted(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1120,7 +1438,7 @@ class EventMocQueueTCRedeemed(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1233,7 +1551,7 @@ class EventMocQueueTPMinted(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1340,7 +1658,7 @@ class EventMocQueueTPRedeemed(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1449,7 +1767,7 @@ class EventMocQueueTPSwappedForTP(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1556,7 +1874,7 @@ class EventMocQueueTPSwappedForTC(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1663,7 +1981,7 @@ class EventMocQueueTCSwappedForTP(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1770,7 +2088,7 @@ class EventMocQueueTCandTPRedeemed(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
@@ -1877,7 +2195,7 @@ class EventMocQueueTCandTPMinted(BaseEvent):
         d_oper["last_block_indexed"] = int(parsed["blockNumber"])
 
         collection.find_one_and_update(
-            {"operId_": d_oper["operId_"]},
+            {"operId_": d_oper["operId_"], "bucket_index": d_oper["bucket_index"]},
             {"$set": d_oper},
             upsert=True)
 
