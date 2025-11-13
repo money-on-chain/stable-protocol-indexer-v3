@@ -25,7 +25,8 @@ This service is required to display operations in the dapp.  The indexer query t
 
 **Requirement and installation**
  
-* We need Python 3.9+
+* We need Python <= 3.10
+* Is not compatible with version 3.11 & 3.12!
 
 Install libraries
 

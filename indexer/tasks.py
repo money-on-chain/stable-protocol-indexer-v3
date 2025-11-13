@@ -170,7 +170,7 @@ class StableIndexerTasks(TasksManager):
             omoc['RegistryConstants']['MOC_STAKING_MACHINE']).call().lower()
 
         # IncentiveV2
-        if self.config['addresses']['IncentiveV2']:
+        if self.config['addresses'].get('IncentiveV2'):
             self.contracts_loaded["IncentiveV2"] = OMOCIncentiveV2(
                 self.connection_helper.connection_manager,
                 self.config,
