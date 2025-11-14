@@ -343,7 +343,7 @@ class EventMocPeggedTokenChange(BaseEvent):
         d_event["blockNumber"] = int(parsed["blockNumber"])
         d_event["i_"] = parsed["i_"]
         d_event["tpTokenAddress_"] = sanitize_address(parsed["tpTokenAddress_"])
-        d_event["peggedTokenParams_"] = parsed["peggedTokenParams_"]
+        d_event["peggedTokenParams_"] = str(parsed["peggedTokenParams_"])
         d_event["createdAt"] = parsed["createdAt"]
         d_event["lastUpdatedAt"] = datetime.datetime.now()
 
