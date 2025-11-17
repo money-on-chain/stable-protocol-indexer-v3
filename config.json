@@ -38,6 +38,9 @@
     "MocMultiCollateralGuard": "0x88B87B2E11fF725B5Eb86D1d2Db694d0A62F9188",
     "IRegistry": "0x40B45a03C02a14b38ac2c607a3715506Df3BEEbd"
   },
+  "contracts_white_list": [
+    "0x29e2ecbC28cc0794b20C8C2fAcc2EB47cB07cE11"
+  ],
   "collateral": [
     {
       "name": "BPRO",
@@ -48,12 +51,28 @@
       "type": "rc20"
     }
   ],
+  "collateralToken": [
+    {
+      "name": "BPROx"
+    },
+    {
+      "name": "DOCx"
+    }
+  ],
   "pegged": [
     {
       "name": "ARS"
     },
     {
       "name": "COP"
+    }
+  ],
+  "feeToken": [
+    {
+      "name": "FLIP"
+    },
+    {
+      "name": "FLIP"
     }
   ]
 }

@@ -13,7 +13,7 @@ from .scan_raw_transactions import ScanRawTxs
 from .scan_logs_transactions import ScanLogsTransactions
 from .scan_transactions_status import ScanTxStatus
 
-__VERSION__ = '4.3.4'
+__VERSION__ = '4.3.5'
 
 log.info("Starting Protocol Indexer version {0}".format(__VERSION__))
 
@@ -97,6 +97,7 @@ class StableIndexerTasks(TasksManager):
 
             if ca['type']  == 'rc20':
                 ca_token_address = moc_bucket.ac_token()
+                log.info("({0}) Collateral {1} using address: {2}".format(ca['name'], self.config["collateral"][0]["name"], ca_token_address))
                 ca_token = ERC20Token(
                     self.connection_helper.connection_manager,
                     contract_address=ca_token_address)
@@ -105,6 +106,7 @@ class StableIndexerTasks(TasksManager):
 
             # MocQueue
             moc_queue_addr = moc_bucket.moc_queue()
+            log.info("({0}) MocQueue using address: {1}".format(ca['name'], moc_queue_addr.lower()))
             self.contracts_loaded["MocQueue"].append(MocQueue(
                 self.connection_helper.connection_manager,
                 self.config,
@@ -113,6 +115,7 @@ class StableIndexerTasks(TasksManager):
 
             # Token TC
             tc_token_addr = moc_bucket.tc_token()
+            log.info("({0}) TC {1} using address: {2}".format(ca['name'], self.config["collateralToken"][0]["name"], tc_token_addr.lower()))
             self.contracts_loaded["TC"].append(ERC20Token(
                 self.connection_helper.connection_manager,
                 contract_address=tc_token_addr))
@@ -128,6 +131,7 @@ class StableIndexerTasks(TasksManager):
             tp_address = self.contracts_loaded["Moc"][bucket_index].tp_tokens(tp_i)
             if not tp_address:
                 continue
+            log.info("TP {0} using address: {1}".format(self.config["pegged"][0]["name"], tp_address.lower()))
             self.contracts_loaded["TP"].append(
                 ERC20Token(
                     self.connection_helper.connection_manager,
@@ -141,6 +145,7 @@ class StableIndexerTasks(TasksManager):
 
         bucket_index = 0
         fee_token_address = self.contracts_loaded["Moc"][bucket_index].fee_token()
+        log.info("Fee Token {0} using address: {1}".format(self.config["feeToken"][0]["name"], fee_token_address.lower()))
         self.contracts_loaded["FeeToken"] = ERC20Token(
             self.connection_helper.connection_manager,
             contract_address=fee_token_address)
@@ -151,6 +156,7 @@ class StableIndexerTasks(TasksManager):
         omoc = read_omoc_json_file()
 
         # IRegistry
+        log.info("IRegistry using address: {0}".format(self.config['addresses']['IRegistry'].lower()))
         self.contracts_loaded["IRegistry"] = OMOCIRegistry(
             self.connection_helper.connection_manager,
             self.config,
@@ -171,6 +177,7 @@ class StableIndexerTasks(TasksManager):
 
         # IncentiveV2
         if self.config['addresses'].get('IncentiveV2'):
+            log.info("IncentiveV2 using address: {0}".format(self.config['addresses']['IncentiveV2'].lower()))
             self.contracts_loaded["IncentiveV2"] = OMOCIncentiveV2(
                 self.connection_helper.connection_manager,
                 self.config,
@@ -178,24 +185,28 @@ class StableIndexerTasks(TasksManager):
             self.contracts_addresses['IncentiveV2'] = self.contracts_loaded["IncentiveV2"].address().lower()
 
         # DelayMachine
+        log.info("DelayMachine using address: {0}".format(self.contracts_addresses['DelayMachine'].lower()))
         self.contracts_loaded["DelayMachine"] = OMOCDelayMachine(
             self.connection_helper.connection_manager,
             self.config,
             contract_address=self.contracts_addresses['DelayMachine'])
 
         # Supporters
+        log.info("Supporters using address: {0}".format(self.contracts_addresses['Supporters'].lower()))
         self.contracts_loaded["Supporters"] = OMOCSupporters(
             self.connection_helper.connection_manager,
             self.config,
             contract_address=self.contracts_addresses['Supporters'])
 
         # VestingFactory
+        log.info("VestingFactory using address: {0}".format(self.contracts_addresses['VestingFactory'].lower()))
         self.contracts_loaded["VestingFactory"] = OMOCVestingFactory(
             self.connection_helper.connection_manager,
             self.config,
             contract_address=self.contracts_addresses['VestingFactory'])
 
         # VotingMachine
+        log.info("VotingMachine using address: {0}".format(self.contracts_addresses['VotingMachine'].lower()))
         self.contracts_loaded["VotingMachine"] = OMOCVotingMachine(
             self.connection_helper.connection_manager,
             self.config,
@@ -211,6 +222,9 @@ class StableIndexerTasks(TasksManager):
                 self.filter_contracts_addresses.append(v.lower())
             else:
                 raise Exception("Filter address not recognize!")
+
+        for white_address in self.config['contracts_white_list']:
+            self.filter_contracts_addresses.append(white_address.lower())
 
     def create_mongo_index(self):
 
