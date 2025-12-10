@@ -18,14 +18,14 @@
   "scan_raw_transactions": {
     "confirm_blocks": 10,
     "blocks_recession": 1,
-    "from_block": 7086471,
+    "from_block": 7097660,
     "to_block": 0,
     "max_blocks_to_process": 100
   },
   "scan_raw_transactions_confirming": {
     "confirm_blocks": 20,
     "blocks_recession": 1,
-    "from_block": 7086471,
+    "from_block": 7097660,
     "to_block": 0,
     "max_blocks_to_process": 100
   },
@@ -35,11 +35,11 @@
   },
   "addresses": {
     "Multicall2": "0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8",
-    "MocMultiCollateralGuard": "0x213412691bD75079450ED95Ed03c3676c48ec7a4",
-    "IRegistry": "0x57763b14ef24a7D6067e446b2E22cba7353A23ee"
+    "MocMultiCollateralGuard": "0xAE7f601817f761Fe0F8859ebF9FC4c73623504Ef",
+    "IRegistry": "0xAF1E76f0Fe8b835F200859eDe3120f534aCE8Be3"
   },
   "contracts_white_list": [
-    "0x7CB84a6028215AF5bC83FE9835ef4a0D5174d77E"
+    "0x70dFb9cC38a2816ddA51aB57DCafb433Ca7fEb0e"
   ],
   "collateral": [
     {
