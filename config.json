@@ -35,11 +35,11 @@
   },
   "addresses": {
     "Multicall2": "0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8",
-    "MocMultiCollateralGuard": "0x88B87B2E11fF725B5Eb86D1d2Db694d0A62F9188",
-    "IRegistry": "0x40B45a03C02a14b38ac2c607a3715506Df3BEEbd"
+    "MocMultiCollateralGuard": "0x0E6B7d25f2fD1847423D782942027b2f2eaC6DF4",
+    "IRegistry": "0x8d7582f281B4c80673E8a4348f5aEbf8Df6F665F"
   },
   "contracts_white_list": [
-    "0x29e2ecbC28cc0794b20C8C2fAcc2EB47cB07cE11"
+    "0xeD74d959A38866fCD280E8ADcF30b9BbeA971112"
   ],
   "collateral": [
     {
