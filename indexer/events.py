@@ -991,7 +991,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             {"$set": d_event},
             upsert=True)
 
-        log.info("Event :: MocQueue_OperationQueued :: bucket: {0} :: operId_: {0}".format(
+        log.info("Event :: MocQueue_OperationQueued :: bucket: {0} :: operId_: {1}".format(
             self.bucket_index, d_event["operId_"]))
         log.info(d_event)
 
@@ -2038,6 +2038,8 @@ class EventMocQueueTCandTPRedeemed(BaseEvent):
         d_event["qTC_"] = str(parsed["qTC_"])
         d_event["qTP_"] = str(parsed["qTP_"])
         d_event["qAC_"] = str(parsed["qAC_"])
+        d_event["qACtoRedeemTC_"] = str(parsed["qACtoRedeemTC_"])
+        d_event["qACtoRedeemTP_"] = str(parsed["qACtoRedeemTP_"])
         d_event["qACfee_"] = str(parsed["qACfee_"])
         d_event["qFeeToken_"] = str(parsed["qFeeToken_"])
         d_event["qACVendorMarkup_"] = str(parsed["qACVendorMarkup_"])
@@ -2145,6 +2147,8 @@ class EventMocQueueTCandTPMinted(BaseEvent):
         d_event["qTC_"] = str(parsed["qTC_"])
         d_event["qTP_"] = str(parsed["qTP_"])
         d_event["qAC_"] = str(parsed["qAC_"])
+        d_event["qACtoMintTC_"] = str(parsed["qACtoMintTC_"])
+        d_event["qACtoMintTP_"] = str(parsed["qACtoMintTP_"])
         d_event["qACfee_"] = str(parsed["qACfee_"])
         d_event["qFeeToken_"] = str(parsed["qFeeToken_"])
         d_event["qACVendorMarkup_"] = str(parsed["qACVendorMarkup_"])
