@@ -77,7 +77,6 @@ class ScanLogsTransactions:
     def init_log_decoder(self):
 
         contracts_log_decoder = dict()
-
         contracts_log_decoder[self.contracts_addresses['MocMultiCollateralGuard'].lower()] = LogDecoder(
             self.contracts_loaded['MocMultiCollateralGuard'].sc
         )

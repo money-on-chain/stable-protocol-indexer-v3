@@ -101,4 +101,3 @@ class Contract(object):
     def events(self):
 
         return self.sc.events
-
