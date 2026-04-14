@@ -59,3 +59,15 @@ docker run -d \
 --env APP_CONNECTION_URI=https://public-node.testnet.rsk.co \
 stable_protocol_indexer
 ```
+
+**Note on multicollateral:**
+
+in config:
+
+```
+"contracts_white_list": [
+    "0xeD74d959A38866fCD280E8ADcF30b9BbeA971112"
+  ],
+```
+
+the address of task runner proxy

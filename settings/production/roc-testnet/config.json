@@ -1,0 +1,74 @@
+{
+  "uri": "https://public-node.testnet.rsk.co",
+  "app_project": "roc",
+  "mongo": {
+    "uri": "mongodb://localhost:27017/",
+    "db": "roc_v2_testnet"
+  },
+  "debug": true,
+  "tasks": {
+    "scan_raw_transactions": {"interval":  2},
+    "scan_raw_transactions_confirming": {"interval":  2},
+    "scan_logs": {"interval":  2},
+    "scan_tx_status": {"interval":  2}
+  },
+  "scan_logs": {
+    "confirm_blocks": 10
+  },
+  "scan_raw_transactions": {
+    "confirm_blocks": 10,
+    "blocks_recession": 1,
+    "from_block": 7549480,
+    "to_block": 0,
+    "max_blocks_to_process": 100
+  },
+  "scan_raw_transactions_confirming": {
+    "confirm_blocks": 20,
+    "blocks_recession": 1,
+    "from_block": 7549480,
+    "to_block": 0,
+    "max_blocks_to_process": 100
+  },
+  "scan_tx_status": {
+    "seconds_not_in_chain_error": 600,
+    "confirm_blocks": 10
+  },
+  "addresses": {
+    "Multicall2": "0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8",
+    "MocMultiCollateralGuard": "0xBc3669954b4c513140294ECF9B7b540cf964f0a3",
+    "IRegistry": "0xf078375a3dD89dDF4D9dA460352199C6769b5f10"
+  },
+  "contracts_white_list": [
+  ],
+  "collateral": [
+    {
+      "name": "RIF",
+      "type": "rc20"
+    },
+    {
+      "name": "DOC",
+      "type": "rc20"
+    }
+  ],
+  "collateralToken": [
+    {
+      "name": "RIFP"
+    },
+    {
+      "name": "ROCR"
+    }
+  ],
+  "pegged": [
+    {
+      "name": "USDRIF"
+    }
+  ],
+  "feeToken": [
+    {
+      "name": "MOC"
+    },
+    {
+      "name": "MOC"
+    }
+  ]
+}
