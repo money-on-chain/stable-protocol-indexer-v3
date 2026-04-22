@@ -383,9 +383,6 @@ class ScanRawTxs:
         self.filter_contracts = filter_contracts
         self.filter_contracts_vesting = []
 
-    def on_init(self):
-        pass
-
     def on_load_vesting(self):
 
         vesting_created = self.connection_helper.mongo_collection('event_VestingFactory_VestingCreated')

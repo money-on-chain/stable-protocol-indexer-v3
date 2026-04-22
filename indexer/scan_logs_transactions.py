@@ -490,8 +490,6 @@ class ScanLogsTransactions:
 
         return d_event
 
-    def on_init(self):
-        pass
 
     def parse_tx_receipt(self, tx_receipt, event_name, log_index=1):
 

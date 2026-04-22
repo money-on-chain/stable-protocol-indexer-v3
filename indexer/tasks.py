@@ -58,7 +58,6 @@ class StableIndexerTasks(TasksManager):
         self.contracts_loaded["Multicall2"] = Multicall2(
             self.connection_helper.connection_manager,
             contract_address=self.config['addresses']['Multicall2'])
-        #self.contracts_addresses['Multicall2'] = self.contracts_loaded["Multicall2"].address().lower()
 
         log.info("MocMultiCollateralGuard using address: %s" % self.config['addresses']['MocMultiCollateralGuard'])
         # MocMultiCollateralGuard
