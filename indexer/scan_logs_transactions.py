@@ -586,7 +586,8 @@ class ScanLogsTransactions:
         self.update_info_last_block()
 
         collection_raw_transactions = self.connection_helper.mongo_collection('raw_transactions')
-        raw_txs = collection_raw_transactions.find({"processed": False}, sort=[("blockNumber", 1)])
+        max_txs = self.options['scan_logs']['max_txs_to_process']
+        raw_txs = collection_raw_transactions.find({"processed": False}, sort=[("blockNumber", 1)]).limit(max_txs)
 
         count = 0
         if raw_txs:
