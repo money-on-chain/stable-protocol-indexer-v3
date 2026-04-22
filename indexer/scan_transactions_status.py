@@ -66,7 +66,7 @@ class ScanTxStatus:
                         d_tx_up['status'],
                         tx_pending['hash']))
                 elif tx_receipt.status == 1:
-                    if tx_pending['blockNumber'] + confirm_blocks < block_height:
+                    if tx_pending['blockNumber'] + confirm_blocks <= block_height:
                         # set confirmation time
                         d_tx_up['confirmationTime'] = datetime.datetime.now()
 
