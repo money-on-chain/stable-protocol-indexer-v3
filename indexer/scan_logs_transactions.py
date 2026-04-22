@@ -542,6 +542,8 @@ class ScanLogsTransactions:
             try:
                 d_oper["contract"] = list(self.contracts_addresses.keys())[list(self.contracts_addresses.values()).index(d_oper["to"].lower())]
             except (KeyError, ValueError):
+                log.warning("Contract address not recognized. to: {0} hash: {1}".format(
+                    d_oper["to"], raw_tx['hash']))
                 d_oper["contract"] = ''
 
             if d_oper["contract"] not in ['Moc', 'MocQueue', 'TC', 'TP', 'CA', 'FeeToken']:
@@ -564,8 +566,8 @@ class ScanLogsTransactions:
                     try:
                         decoded_event = self.contracts_log_decoder[log_address].decode_log(tx_log)
                     except UnknownEvent:
-                        log.error("Skipping. Not known event in ABI. Contract address: {0} Info: {1}".format(
-                            log_address, tx_log))
+                        log.error("Skipping. Not known event in ABI. hash: {0} contract: {1} log: {2}".format(
+                            raw_tx['hash'], log_address, tx_log))
                         continue
                     if decoded_event['name'] in self.map_events_contracts[log_address]:
                         log_index = tx_log['logIndex']
