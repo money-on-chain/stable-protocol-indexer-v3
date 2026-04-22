@@ -74,17 +74,21 @@ class ConnectionManager(BaseConnectionManager):
 
         if 'ACCOUNT_PK_SECRET' in os.environ:
             # obtain from enviroment if exist instead
-            private_key = os.environ['ACCOUNT_PK_SECRET']
+            private_key = os.environ.pop('ACCOUNT_PK_SECRET')
 
             l_priv = private_key.split(',')
             if len(l_priv) > 1:
                 # this is a method:
                 # ACCOUNT_PK_SECRET=PK1,PK2,PK3
                 for a_priv in l_priv:
+                    if not a_priv:
+                        raise ValueError("ACCOUNT_PK_SECRET contains an empty key")
                     account = Account().from_key(a_priv)
                     accounts.append(account)
             else:
                 # Simple PK: ACCOUNT_PK_SECRET=PK
+                if not private_key:
+                    raise ValueError("ACCOUNT_PK_SECRET is empty")
                 account = Account().from_key(private_key)
                 accounts.append(account)
 
@@ -93,7 +97,9 @@ class ConnectionManager(BaseConnectionManager):
             for numb in range(1, 10):
                 env_pk = 'ACCOUNT_PK_SECRET_{}'.format(numb)
                 if env_pk in os.environ:
-                    private_key = os.environ[env_pk]
+                    private_key = os.environ.pop(env_pk)
+                    if not private_key:
+                        raise ValueError("{} is empty".format(env_pk))
                     account = Account().from_key(private_key)
                     accounts.append(account)
 
