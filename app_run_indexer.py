@@ -22,11 +22,14 @@ if __name__ == '__main__':
 
     # override config default
     if 'APP_CONFIG' in os.environ:
-        config = json.loads(os.environ['APP_CONFIG'])
+        try:
+            config = json.loads(os.environ['APP_CONFIG'])
+        except json.JSONDecodeError as e:
+            raise ValueError("APP_CONFIG contains invalid JSON: {}".format(e))
 
     # override mongo uri from env
     if 'APP_MONGO_URI' in os.environ:
-        config['mongo']['uri'] = os.environ['APP_MONGO_URI']
+        config['mongo']['uri'] = os.environ.pop('APP_MONGO_URI')
 
     # override mongo db from env
     if 'APP_MONGO_DB' in os.environ:
