@@ -4,6 +4,7 @@ from collections import OrderedDict
 from web3 import Web3
 
 from .logger import log
+from .status import TX_STATUS_REVERT
 from .events import EventMocQueueTCMinted, \
     EventMocQueueTCRedeemed, \
     EventMocQueueTPMinted, \
@@ -531,7 +532,7 @@ class ScanLogsTransactions:
             d_oper["gasUsed"] = int(raw_tx['gasUsed'])
             gas_fee = d_oper['gasUsed'] * Web3.from_wei(int(raw_tx["gasPrice"]), 'ether')
             d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-            d_oper["status"] = -4  # Revert
+            d_oper["status"] = TX_STATUS_REVERT
             d_oper["createdAt"] = raw_tx["createdAt"]
             d_oper["lastUpdatedAt"] = datetime.datetime.now()
             d_oper['from'] = raw_tx["from"]

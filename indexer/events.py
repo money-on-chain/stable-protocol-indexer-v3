@@ -5,6 +5,7 @@ from eth_typing import HexStr
 from web3 import Web3
 
 from .logger import log
+from .status import TX_STATUS_ERROR, TX_STATUS_QUEUE_ERROR, TX_STATUS_QUEUED, TX_STATUS_EXECUTED
 
 
 def sanitize_address(address):
@@ -777,7 +778,7 @@ class EventMocQueueOperationError(BaseEvent):
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
         d_oper["errorCode_"] = d_event["errorCode_"]
         d_oper["msg_"] = d_event["msg_"]
-        d_oper["status"] = -1  # Error
+        d_oper["status"] = TX_STATUS_QUEUE_ERROR
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -891,7 +892,7 @@ class EventMocQueueUnhandledError(BaseEvent):
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
         d_oper["reason_"] = d_event["reason_"]
-        d_oper["status"] = -2  # Error
+        d_oper["status"] = TX_STATUS_ERROR
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -1142,7 +1143,7 @@ class EventMocQueueOperationQueued(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = d_oper['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 0  # Queue
+        d_oper["status"] = TX_STATUS_QUEUED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -1325,7 +1326,7 @@ class EventMocQueueTCMinted(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed["gasUsed"] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -1431,7 +1432,7 @@ class EventMocQueueTCRedeemed(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -1544,7 +1545,7 @@ class EventMocQueueTPMinted(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -1651,7 +1652,7 @@ class EventMocQueueTPRedeemed(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -1760,7 +1761,7 @@ class EventMocQueueTPSwappedForTP(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -1867,7 +1868,7 @@ class EventMocQueueTPSwappedForTC(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -1974,7 +1975,7 @@ class EventMocQueueTCSwappedForTP(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -2083,7 +2084,7 @@ class EventMocQueueTCandTPRedeemed(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -2192,7 +2193,7 @@ class EventMocQueueTCandTPMinted(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed["gasPrice"]), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1  # Executed
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_oper["createdAt"] = parsed["createdAt"]
         d_oper["lastUpdatedAt"] = datetime.datetime.now()
         d_oper["confirmationTime"] = None
@@ -2260,7 +2261,7 @@ class EventTokenTransfer(BaseEvent):
         d_oper["gasUsed"] = int(parsed['gasUsed'])
         gas_fee = parsed['gasUsed'] * Web3.from_wei(int(parsed['gasPrice']), 'ether')
         d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-        d_oper["status"] = 1
+        d_oper["status"] = TX_STATUS_EXECUTED
         d_params = dict()
         d_params['hash'] = tx_hash
         d_params['blockNumber'] = int(parsed["blockNumber"])
