@@ -2,10 +2,10 @@
   "uri": "https://public-node.testnet.rsk.co",
   "app_project": "roc",
   "mongo": {
-    "uri": "mongodb://localhost:27017/",
+    "uri": "SET_VIA_APP_MONGO_URI_ENV",
     "db": "roc_v2_testnet"
   },
-  "debug": true,
+  "debug": false,
   "tasks": {
     "scan_raw_transactions": {"interval":  2},
     "scan_raw_transactions_confirming": {"interval":  2},

@@ -29,7 +29,12 @@ if __name__ == '__main__':
 
     # override mongo uri from env
     if 'APP_MONGO_URI' in os.environ:
-        config['mongo']['uri'] = os.environ.pop('APP_MONGO_URI')
+        mongo_uri = os.environ.pop('APP_MONGO_URI')
+        if '@' not in mongo_uri:
+            raise ValueError(
+                "APP_MONGO_URI must include credentials (mongodb://user:pass@host/db)."
+            )
+        config['mongo']['uri'] = mongo_uri
 
     # override mongo db from env
     if 'APP_MONGO_DB' in os.environ:
@@ -38,6 +43,11 @@ if __name__ == '__main__':
     # override connection uri from env
     if 'APP_CONNECTION_URI' in os.environ:
         config['uri'] = os.environ['APP_CONNECTION_URI']
+
+    if config.get('mongo', {}).get('uri') == 'SET_VIA_APP_MONGO_URI_ENV':
+        raise RuntimeError(
+            "MongoDB URI is not configured. Set the APP_MONGO_URI environment variable."
+        )
 
     indexer_tasks = StableIndexerTasks(config)
     indexer_tasks.start_loop()

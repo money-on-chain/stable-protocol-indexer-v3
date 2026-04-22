@@ -3,10 +3,10 @@
   "collateral": "rc20",
   "app_project": "flipmoney",
   "mongo": {
-    "uri": "mongodb://localhost:27017/",
+    "uri": "SET_VIA_APP_MONGO_URI_ENV",
     "db": "flipago_mainnet"
   },
-  "debug": true,
+  "debug": false,
   "tasks": {
     "scan_raw_transactions": {"interval":  2},
     "scan_raw_transactions_confirming": {"interval":  2},
