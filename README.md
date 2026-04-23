@@ -1,6 +1,6 @@
 # Stable Protocol Indexer v3 (Multicollateral)
 
-## Warning: This is only for version 3 of the main contracts. 
+### Warning: This is only for version 3 of the main contracts. 
 
 ## Introduction
 
@@ -60,7 +60,7 @@ docker run -d \
 stable_protocol_indexer
 ```
 
-**Note on multicollateral:**
+**Note on multicollateral & using task runner settings:**
 
 in config:
 
@@ -70,4 +70,4 @@ in config:
   ],
 ```
 
-the address of task runner proxy
+we need to whitelist the address of task runner proxy
