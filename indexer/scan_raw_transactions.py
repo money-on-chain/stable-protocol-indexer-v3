@@ -225,6 +225,46 @@ def scan_raw_txs(options, connection_helper, filter_contracts, task=None):
     log.info("[1. Scan Raw Txs] Done! Processed: [{0}] in [{1} seconds]".format(processed, duration))
 
 
+def purge_reorged_block(connection_helper, block_number):
+    """Detect and purge all records derived from orphaned transactions at block_number.
+
+    Compares the blockHash stored in raw_transactions against the canonical hash
+    reported by the node. On mismatch, deletes orphaned raw_transactions and all
+    derived records (operations, omoc_operations, event_*) by tx hash.
+
+    Returns True if a reorg was detected and purged.
+    """
+    canonical_block = connection_helper.connection_manager.get_block(block_number)
+    canonical_hash = str(HexBytes(canonical_block['hash']).hex())
+
+    collection_raw_transactions = connection_helper.mongo_collection('raw_transactions')
+    orphaned = list(collection_raw_transactions.find(
+        {"blockNumber": block_number, "blockHash": {"$ne": canonical_hash}},
+        {"hash": 1}
+    ))
+
+    if not orphaned:
+        return False
+
+    orphaned_hashes = [tx["hash"] for tx in orphaned]
+    log.warning("[Reorg] Block {0}: {1} orphaned tx(s) detected, canonical_hash={2}. Purging.".format(
+        block_number, len(orphaned_hashes), canonical_hash))
+
+    collection_raw_transactions.delete_many(
+        {"blockNumber": block_number, "blockHash": {"$ne": canonical_hash}}
+    )
+
+    db = connection_helper.m_client[connection_helper.config['mongo']['db']]
+    for coll_name in db.list_collection_names():
+        if coll_name in ('operations', 'omoc_operations') or coll_name.startswith('event_'):
+            result = db[coll_name].delete_many({"hash": {"$in": orphaned_hashes}})
+            if result.deleted_count:
+                log.warning("[Reorg] Purged {0} record(s) from '{1}'".format(
+                    result.deleted_count, coll_name))
+
+    return True
+
+
 def scan_raw_txs_confirming(options, connection_helper, filter_contracts, task=None):
 
     start_time = time.time()
@@ -269,6 +309,9 @@ def scan_raw_txs_confirming(options, connection_helper, filter_contracts, task=N
 
     processed = 0
     while current_block <= to_block:
+
+        # detect and repair reorgs before re-indexing
+        purge_reorged_block(connection_helper, current_block)
 
         # index our contracts only
         block_processed = index_raw_tx(

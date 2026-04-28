@@ -13,17 +13,17 @@
     "scan_tx_status": {"interval":  2}
   },
   "scan_logs": {
-    "confirm_blocks": 10
+    "confirm_blocks": 30
   },
   "scan_raw_transactions": {
-    "confirm_blocks": 10,
+    "confirm_blocks": 30,
     "blocks_recession": 1,
     "from_block": 7549480,
     "to_block": 0,
     "max_blocks_to_process": 100
   },
   "scan_raw_transactions_confirming": {
-    "confirm_blocks": 20,
+    "confirm_blocks": 30,
     "blocks_recession": 1,
     "from_block": 7549480,
     "to_block": 0,
@@ -31,7 +31,7 @@
   },
   "scan_tx_status": {
     "seconds_not_in_chain_error": 600,
-    "confirm_blocks": 10
+    "confirm_blocks": 30
   },
   "addresses": {
     "Multicall2": "0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8",
