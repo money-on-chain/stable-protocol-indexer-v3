@@ -159,23 +159,6 @@ class ConnectionManager(BaseConnectionManager):
         """ Transaction by hash """
         return self.web3.eth.get_transaction(transaction_hash)
 
-    def load_json_contract(self, json_filename, deploy_address=None):
-        """ Load the abi from json file """
-
-        network = self.network
-
-        with open(json_filename) as f:
-            info_json = json.load(f)
-        abi = info_json["abi"]
-
-        # Get from json if we dont know the address
-        if not deploy_address:
-            deploy_address = info_json["networks"][str(self.options['networks'][network]['chain_id'])]['address']
-
-        sc = self.web3.eth.contract(address=self.web3.to_checksum_address(deploy_address), abi=abi)
-
-        return sc
-
     def load_abi_contract_file(self, abi_filename, contract_address):
         """ Load the abi """
 

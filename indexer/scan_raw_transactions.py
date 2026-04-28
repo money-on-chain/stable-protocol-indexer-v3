@@ -8,7 +8,6 @@ from collections import OrderedDict
 from indexer.logger import log
 
 
-LOCAL_TIMEZONE = datetime.datetime.now().astimezone().tzinfo
 
 
 def filter_transactions(transactions, filter_addresses):
@@ -87,7 +86,7 @@ def block_filtered_transactions(
     txs['d_txs'] = d_fil_transactions
     txs['receipts'] = fil_transactions_receipts
     txs['block_number'] = f_block['number']
-    txs['block_ts'] = datetime.datetime.fromtimestamp(f_block['timestamp'], LOCAL_TIMEZONE)
+    txs['block_ts'] = datetime.datetime.fromtimestamp(f_block['timestamp'], datetime.timezone.utc)
 
     return txs
 

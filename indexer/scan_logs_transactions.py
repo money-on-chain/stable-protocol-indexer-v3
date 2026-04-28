@@ -61,6 +61,15 @@ class ScanLogsTransactions:
         self.filter_contracts_addresses = filter_contracts_addresses
         self.confirm_blocks = self.options['scan_logs']['confirm_blocks']
 
+        # reverse map: lowercase address -> contract name, built once for O(1) lookup
+        self._address_to_contract = {}
+        for name, addr in contracts_addresses.items():
+            if isinstance(addr, list):
+                for a in addr:
+                    self._address_to_contract[a.lower()] = name
+            elif isinstance(addr, str):
+                self._address_to_contract[addr.lower()] = name
+
         # init log decoder
         self.contracts_log_decoder = self.init_log_decoder()
 
@@ -538,12 +547,10 @@ class ScanLogsTransactions:
             d_oper['from'] = raw_tx["from"]
             d_oper["to"] = raw_tx["to"]
 
-            try:
-                d_oper["contract"] = list(self.contracts_addresses.keys())[list(self.contracts_addresses.values()).index(d_oper["to"].lower())]
-            except (KeyError, ValueError):
+            d_oper["contract"] = self._address_to_contract.get(d_oper["to"].lower(), '')
+            if not d_oper["contract"]:
                 log.warning("Contract address not recognized. to: {0} hash: {1}".format(
                     d_oper["to"], raw_tx['hash']))
-                d_oper["contract"] = ''
 
             if d_oper["contract"] not in ['Moc', 'MocQueue', 'TC', 'TP', 'CA', 'FeeToken']:
                 log.info("Tx (REVERT) contract is not from Stable Protocol. Tx Hash: {0}".format(raw_tx['hash']))

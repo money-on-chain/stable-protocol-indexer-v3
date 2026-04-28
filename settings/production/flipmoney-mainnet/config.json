@@ -14,7 +14,8 @@
     "scan_tx_status": {"interval":  2}
   },
   "scan_logs": {
-    "confirm_blocks": 30
+    "confirm_blocks": 30,
+    "max_txs_to_process": 500
   },
   "scan_raw_transactions": {
     "confirm_blocks": 30,
