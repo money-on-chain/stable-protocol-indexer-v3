@@ -4,6 +4,7 @@ from web3 import Web3
 from web3.exceptions import TransactionNotFound
 
 from .logger import log
+from .status import TX_STATUS_REVERT, TX_STATUS_TIMEOUT
 
 
 class ScanTxStatus:
@@ -57,7 +58,7 @@ class ScanTxStatus:
                 d_tx_up = dict()
                 if tx_receipt.status == 0:
                     # Revert TX
-                    d_tx_up['status'] = -4
+                    d_tx_up['status'] = TX_STATUS_REVERT
                     operations.find_one_and_update(
                         {"_id": tx_pending["_id"]},
                         {"$set": d_tx_up})
@@ -66,7 +67,7 @@ class ScanTxStatus:
                         d_tx_up['status'],
                         tx_pending['hash']))
                 elif tx_receipt.status == 1:
-                    if tx_pending['blockNumber'] + confirm_blocks < block_height:
+                    if tx_pending['blockNumber'] + confirm_blocks <= block_height:
                         # set confirmation time
                         d_tx_up['confirmationTime'] = datetime.datetime.now()
 
@@ -83,7 +84,7 @@ class ScanTxStatus:
                     dte = created_at + datetime.timedelta(seconds=seconds_not_in_chain_error)
                     if dte < block_height_ts:
                         d_tx_up = dict()
-                        d_tx_up['status'] = -3
+                        d_tx_up['status'] = TX_STATUS_TIMEOUT
                         d_tx_up['errorCode'] = 'staleTransaction'
 
                         operations.find_one_and_update(

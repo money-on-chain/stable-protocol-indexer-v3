@@ -4,6 +4,7 @@ from collections import OrderedDict
 from web3 import Web3
 
 from .logger import log
+from .status import TX_STATUS_REVERT
 from .events import EventMocQueueTCMinted, \
     EventMocQueueTCRedeemed, \
     EventMocQueueTPMinted, \
@@ -490,8 +491,6 @@ class ScanLogsTransactions:
 
         return d_event
 
-    def on_init(self):
-        pass
 
     def parse_tx_receipt(self, tx_receipt, event_name, log_index=1):
 
@@ -533,7 +532,7 @@ class ScanLogsTransactions:
             d_oper["gasUsed"] = int(raw_tx['gasUsed'])
             gas_fee = d_oper['gasUsed'] * Web3.from_wei(int(raw_tx["gasPrice"]), 'ether')
             d_oper["gasFeeRBTC"] = str(int(gas_fee * self.precision))
-            d_oper["status"] = -4  # Revert
+            d_oper["status"] = TX_STATUS_REVERT
             d_oper["createdAt"] = raw_tx["createdAt"]
             d_oper["lastUpdatedAt"] = datetime.datetime.now()
             d_oper['from'] = raw_tx["from"]
@@ -542,6 +541,8 @@ class ScanLogsTransactions:
             try:
                 d_oper["contract"] = list(self.contracts_addresses.keys())[list(self.contracts_addresses.values()).index(d_oper["to"].lower())]
             except (KeyError, ValueError):
+                log.warning("Contract address not recognized. to: {0} hash: {1}".format(
+                    d_oper["to"], raw_tx['hash']))
                 d_oper["contract"] = ''
 
             if d_oper["contract"] not in ['Moc', 'MocQueue', 'TC', 'TP', 'CA', 'FeeToken']:
@@ -564,8 +565,8 @@ class ScanLogsTransactions:
                     try:
                         decoded_event = self.contracts_log_decoder[log_address].decode_log(tx_log)
                     except UnknownEvent:
-                        log.error("Skipping. Not known event in ABI. Contract address: {0} Info: {1}".format(
-                            log_address, tx_log))
+                        log.error("Skipping. Not known event in ABI. hash: {0} contract: {1} log: {2}".format(
+                            raw_tx['hash'], log_address, tx_log))
                         continue
                     if decoded_event['name'] in self.map_events_contracts[log_address]:
                         log_index = tx_log['logIndex']
@@ -586,7 +587,8 @@ class ScanLogsTransactions:
         self.update_info_last_block()
 
         collection_raw_transactions = self.connection_helper.mongo_collection('raw_transactions')
-        raw_txs = collection_raw_transactions.find({"processed": False}, sort=[("blockNumber", 1)])
+        max_txs = self.options['scan_logs']['max_txs_to_process']
+        raw_txs = collection_raw_transactions.find({"processed": False}, sort=[("blockNumber", 1)]).limit(max_txs)
 
         count = 0
         if raw_txs:

@@ -8,7 +8,6 @@ import datetime
 from pebble import ProcessPool, sighandler, ProcessExpired, ThreadPool
 
 from .logger import log
-#from .utils import aws_put_metric_heart_beat
 
 
 class TerminateSignal(Exception):
@@ -76,16 +75,13 @@ class TasksManager:
                         task.tx_receipt_timestamp = task.result['receipt']['timestamp']
         except TimeoutError as e:
             log.info("Function took longer than %d seconds. Task going to cancel!" % e.args[1])
-            #aws_put_metric_heart_beat(1)
             future.cancel()
         except ProcessExpired as e:
             log.info("%s. Exit code: %d" % (e, e.exitcode))
-            #aws_put_metric_heart_beat(1)
             future.cancel()
         except Exception as e:
             log.info("Function raised %s" % e)
             log.info(e, exc_info=True)
-            #aws_put_metric_heart_beat(1)
             future.cancel()
 
         task.last_run = datetime.datetime.now()
@@ -117,8 +113,6 @@ class TasksManager:
                     sleep(1)
             except TerminateSignal:
                 log.info("Terminal Signal received... Going to shutdown... stop pooling now!")
-                #pool.stop()
-                # wait to finish tasks ...
                 pool.close()
                 pool.join(timeout=self.timeout)
 
