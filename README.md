@@ -2,6 +2,12 @@
 
 ### Warning: This is only for version 3 of the main contracts. 
 
+| Project              | Version | V3 | 
+|----------------------|---------|----|
+| MOC (Money on Chain) | V1      | ❌  |
+| ROC (RIF on Chain)   | V3      | ✅  |
+
+
 ## Introduction
 
 To speed up the dapp we need an indexer of the blockchain of our contracts. 
