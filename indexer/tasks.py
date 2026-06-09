@@ -8,7 +8,7 @@ from .tasks_manager import TasksManager
 from .logger import log
 from .contracts import Multicall2, MocMultiCollateralGuard, MocCARC20, MocCACoinbase, MocQueue, \
     OMOCDelayMachine, OMOCIncentiveV2, OMOCSupporters, OMOCVestingFactory, \
-    OMOCVotingMachine, OMOCIRegistry
+    OMOCVotingMachine, OMOCIRegistry, MocLendingManager
 from .scan_raw_transactions import ScanRawTxs
 from .scan_logs_transactions import ScanLogsTransactions
 from .scan_transactions_status import ScanTxStatus
@@ -211,6 +211,16 @@ class StableIndexerTasks(TasksManager):
             self.config,
             contract_address=self.contracts_addresses['VotingMachine'])
         self.contracts_addresses['VotingMachine'] = self.contracts_loaded["VotingMachine"].address().lower()
+
+        # MocLendingManager (optional — only loaded when address is provided in config)
+        if self.config['addresses'].get('MocLendingManager'):
+            lending_address = self.config['addresses']['MocLendingManager']
+            log.info("MocLendingManager using address: {0}".format(lending_address.lower()))
+            self.contracts_loaded["MocLendingManager"] = MocLendingManager(
+                self.connection_helper.connection_manager,
+                contract_address=lending_address)
+            self.contracts_addresses['MocLendingManager'] = self.contracts_loaded[
+                "MocLendingManager"].address().lower()
 
         self.filter_contracts_addresses = []
         for k, v in self.contracts_addresses.items():
