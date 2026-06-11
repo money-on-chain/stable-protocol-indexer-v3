@@ -2902,6 +2902,26 @@ class EventLendingDeposit(BaseEvent):
             {"$set": d_event},
             upsert=True)
 
+        user_ops_col = self.connection_helper.mongo_collection('lending_user_operations')
+        user_ops_col.find_one_and_update(
+            {"id_event": id_event},
+            {"$set": {
+                "id_event": id_event,
+                "hash": tx_hash,
+                "blockNumber": d_event["blockNumber"],
+                "eventName": "Deposit",
+                "user": d_event["user"],
+                "tpToken": d_event["tpToken"],
+                "createdAt": d_event["createdAt"],
+                "lastUpdatedAt": d_event["lastUpdatedAt"],
+                "extra": {
+                    "recipient": d_event["recipient"],
+                    "tpAmount": d_event["tpAmount"],
+                    "depositUnits": d_event["depositUnits"],
+                },
+            }},
+            upsert=True)
+
         log.info("Event :: Lending_Deposit :: id: {0}".format(d_event["id_event"]))
         log.info(d_event)
 
@@ -2939,6 +2959,26 @@ class EventLendingWithdraw(BaseEvent):
         collection.find_one_and_update(
             {"id_event": d_event["id_event"]},
             {"$set": d_event},
+            upsert=True)
+
+        user_ops_col = self.connection_helper.mongo_collection('lending_user_operations')
+        user_ops_col.find_one_and_update(
+            {"id_event": id_event},
+            {"$set": {
+                "id_event": id_event,
+                "hash": tx_hash,
+                "blockNumber": d_event["blockNumber"],
+                "eventName": "Withdraw",
+                "user": d_event["user"],
+                "tpToken": d_event["tpToken"],
+                "createdAt": d_event["createdAt"],
+                "lastUpdatedAt": d_event["lastUpdatedAt"],
+                "extra": {
+                    "recipient": d_event["recipient"],
+                    "depositUnits": d_event["depositUnits"],
+                    "tpAmount": d_event["tpAmount"],
+                },
+            }},
             upsert=True)
 
         log.info("Event :: Lending_Withdraw :: id: {0}".format(d_event["id_event"]))
@@ -2980,6 +3020,26 @@ class EventLendingAddACtoVault(BaseEvent):
             {"$set": d_event},
             upsert=True)
 
+        user_ops_col = self.connection_helper.mongo_collection('lending_user_operations')
+        user_ops_col.find_one_and_update(
+            {"id_event": id_event},
+            {"$set": {
+                "id_event": id_event,
+                "hash": tx_hash,
+                "blockNumber": d_event["blockNumber"],
+                "eventName": "AddACtoVault",
+                "user": d_event["user"],
+                "tpToken": d_event["tpToken"],
+                "createdAt": d_event["createdAt"],
+                "lastUpdatedAt": d_event["lastUpdatedAt"],
+                "extra": {
+                    "recipient": d_event["recipient"],
+                    "mocBucket": d_event["mocBucket"],
+                    "acAmount": d_event["acAmount"],
+                },
+            }},
+            upsert=True)
+
         log.info("Event :: Lending_AddACtoVault :: id: {0}".format(d_event["id_event"]))
         log.info(d_event)
 
@@ -3017,6 +3077,26 @@ class EventLendingRemoveACfromVault(BaseEvent):
         collection.find_one_and_update(
             {"id_event": d_event["id_event"]},
             {"$set": d_event},
+            upsert=True)
+
+        user_ops_col = self.connection_helper.mongo_collection('lending_user_operations')
+        user_ops_col.find_one_and_update(
+            {"id_event": id_event},
+            {"$set": {
+                "id_event": id_event,
+                "hash": tx_hash,
+                "blockNumber": d_event["blockNumber"],
+                "eventName": "RemoveACfromVault",
+                "user": d_event["user"],
+                "tpToken": d_event["tpToken"],
+                "createdAt": d_event["createdAt"],
+                "lastUpdatedAt": d_event["lastUpdatedAt"],
+                "extra": {
+                    "recipient": d_event["recipient"],
+                    "mocBucket": d_event["mocBucket"],
+                    "acAmount": d_event["acAmount"],
+                },
+            }},
             upsert=True)
 
         log.info("Event :: Lending_RemoveACfromVault :: id: {0}".format(d_event["id_event"]))
@@ -3057,6 +3137,27 @@ class EventLendingBorrow(BaseEvent):
         collection.find_one_and_update(
             {"id_event": d_event["id_event"]},
             {"$set": d_event},
+            upsert=True)
+
+        user_ops_col = self.connection_helper.mongo_collection('lending_user_operations')
+        user_ops_col.find_one_and_update(
+            {"id_event": id_event},
+            {"$set": {
+                "id_event": id_event,
+                "hash": tx_hash,
+                "blockNumber": d_event["blockNumber"],
+                "eventName": "Borrow",
+                "user": d_event["user"],
+                "tpToken": d_event["tpToken"],
+                "createdAt": d_event["createdAt"],
+                "lastUpdatedAt": d_event["lastUpdatedAt"],
+                "extra": {
+                    "recipient": d_event["recipient"],
+                    "mocBucket": d_event["mocBucket"],
+                    "tpAmount": d_event["tpAmount"],
+                    "creditUnits": d_event["creditUnits"],
+                },
+            }},
             upsert=True)
 
         log.info("Event :: Lending_Borrow :: id: {0}".format(d_event["id_event"]))
@@ -3100,6 +3201,28 @@ class EventLendingRepay(BaseEvent):
             {"$set": d_event},
             upsert=True)
 
+        user_ops_col = self.connection_helper.mongo_collection('lending_user_operations')
+        user_ops_col.find_one_and_update(
+            {"id_event": id_event},
+            {"$set": {
+                "id_event": id_event,
+                "hash": tx_hash,
+                "blockNumber": d_event["blockNumber"],
+                "eventName": "Repay",
+                "user": d_event["user"],
+                "tpToken": d_event["tpToken"],
+                "createdAt": d_event["createdAt"],
+                "lastUpdatedAt": d_event["lastUpdatedAt"],
+                "extra": {
+                    "recipient": d_event["recipient"],
+                    "mocBucket": d_event["mocBucket"],
+                    "creditUnits": d_event["creditUnits"],
+                    "tpAmount": d_event["tpAmount"],
+                    "tpToFeeFlow": d_event["tpToFeeFlow"],
+                },
+            }},
+            upsert=True)
+
         log.info("Event :: Lending_Repay :: id: {0}".format(d_event["id_event"]))
         log.info(d_event)
 
@@ -3139,6 +3262,28 @@ class EventLendingRepayWithAC(BaseEvent):
         collection.find_one_and_update(
             {"id_event": d_event["id_event"]},
             {"$set": d_event},
+            upsert=True)
+
+        user_ops_col = self.connection_helper.mongo_collection('lending_user_operations')
+        user_ops_col.find_one_and_update(
+            {"id_event": id_event},
+            {"$set": {
+                "id_event": id_event,
+                "hash": tx_hash,
+                "blockNumber": d_event["blockNumber"],
+                "eventName": "RepayWithAC",
+                "user": d_event["user"],
+                "tpToken": d_event["tpToken"],
+                "createdAt": d_event["createdAt"],
+                "lastUpdatedAt": d_event["lastUpdatedAt"],
+                "extra": {
+                    "mocBucket": d_event["mocBucket"],
+                    "creditUnits": d_event["creditUnits"],
+                    "acSold": d_event["acSold"],
+                    "tpAmount": d_event["tpAmount"],
+                    "tpToFeeFlow": d_event["tpToFeeFlow"],
+                },
+            }},
             upsert=True)
 
         log.info("Event :: Lending_RepayWithAC :: id: {0}".format(d_event["id_event"]))
@@ -3181,6 +3326,29 @@ class EventLendingLiquidate(BaseEvent):
         collection.find_one_and_update(
             {"id_event": d_event["id_event"]},
             {"$set": d_event},
+            upsert=True)
+
+        user_ops_col = self.connection_helper.mongo_collection('lending_user_operations')
+        user_ops_col.find_one_and_update(
+            {"id_event": id_event},
+            {"$set": {
+                "id_event": id_event,
+                "hash": tx_hash,
+                "blockNumber": d_event["blockNumber"],
+                "eventName": "Liquidate",
+                "user": d_event["user"],
+                "tpToken": d_event["tpToken"],
+                "createdAt": d_event["createdAt"],
+                "lastUpdatedAt": d_event["lastUpdatedAt"],
+                "extra": {
+                    "liquidator": d_event["liquidator"],
+                    "mocBucket": d_event["mocBucket"],
+                    "acSwapped": d_event["acSwapped"],
+                    "tpPaid": d_event["tpPaid"],
+                    "tpToFeeFlow": d_event["tpToFeeFlow"],
+                    "isComplete": d_event["isComplete"],
+                },
+            }},
             upsert=True)
 
         log.info("Event :: Lending_Liquidate :: id: {0}".format(d_event["id_event"]))

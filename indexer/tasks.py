@@ -244,6 +244,11 @@ class StableIndexerTasks(TasksManager):
         index_map = [('createdAt', DESCENDING)]
         self.connection_helper.create_index('operations', index_map, unique=False)
 
+        # Lending user operations collection
+        self.connection_helper.create_index('lending_user_operations', [('id_event', ASCENDING)], unique=True)
+        self.connection_helper.create_index('lending_user_operations', [('user', ASCENDING), ('blockNumber', DESCENDING)], unique=False)
+        self.connection_helper.create_index('lending_user_operations', [('blockNumber', DESCENDING)], unique=False)
+
     def schedule_tasks(self):
 
         log.info("Starting adding indexer tasks...")
