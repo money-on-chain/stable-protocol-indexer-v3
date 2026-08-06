@@ -1001,11 +1001,14 @@ class EventMocQueueOperationQueued(BaseEvent):
 
         # getting the information from the MoCQueue, but take in consideration that
         # after the execution of the queue this is information is no longer available
+        # (the contract clears queue storage on execution), so we must read state as of
+        # the block the operation was queued in, not the current/latest block
+        queued_block = d_event["blockNumber"]
         operation = None
         d_params = dict()
         if d_event["operType_"] == 1:
             operation = 'TCMint'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsMintTC(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsMintTC(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['qTC'] = str(raw_params[0])
             d_params['qACmax'] = str(raw_params[1])
             d_params['sender'] = sanitize_address(raw_params[2])
@@ -1013,7 +1016,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             d_params['vendor'] = sanitize_address(raw_params[4])
         elif d_event["operType_"] == 2:
             operation = 'TCRedeem'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsRedeemTC(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsRedeemTC(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['qTC'] = str(raw_params[0])
             d_params['qACmin'] = str(raw_params[1])
             d_params['sender'] = sanitize_address(raw_params[2])
@@ -1021,7 +1024,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             d_params['vendor'] = sanitize_address(raw_params[4])
         elif d_event["operType_"] == 3:
             operation = 'TPMint'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsMintTP(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsMintTP(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['tp'] = sanitize_address(raw_params[0])
             if d_params['tp']:
                 d_params['tpIndex'] = self.contracts_addresses["TP"].index(d_params['tp'].lower())
@@ -1035,7 +1038,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             d_params['vendor'] = sanitize_address(raw_params[5])
         elif d_event["operType_"] == 4:
             operation = 'TPRedeem'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsRedeemTP(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsRedeemTP(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['tp'] = sanitize_address(raw_params[0])
             if d_params['tp']:
                 d_params['tpIndex'] = self.contracts_addresses["TP"].index(d_params['tp'].lower())
@@ -1049,7 +1052,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             d_params['vendor'] = sanitize_address(raw_params[5])
         elif d_event["operType_"] == 5:
             operation = 'TCandTPMint'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsMintTCandTP(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsMintTCandTP(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['tp'] = sanitize_address(raw_params[0])
             if d_params['tp']:
                 d_params['tpIndex'] = self.contracts_addresses["TP"].index(d_params['tp'].lower())
@@ -1063,7 +1066,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             d_params['vendor'] = sanitize_address(raw_params[5])
         elif d_event["operType_"] == 6:
             operation = 'TCandTPRedeem'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsRedeemTCandTP(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsRedeemTCandTP(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['tp'] = sanitize_address(raw_params[0])
             if d_params['tp']:
                 d_params['tpIndex'] = self.contracts_addresses["TP"].index(d_params['tp'].lower())
@@ -1078,7 +1081,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             d_params['vendor'] = sanitize_address(raw_params[6])
         elif d_event["operType_"] == 7:
             operation = 'TCSwapForTP'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsSwapTCforTP(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsSwapTCforTP(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['tp'] = sanitize_address(raw_params[0])
             if d_params['tp']:
                 d_params['tpIndex'] = self.contracts_addresses["TP"].index(d_params['tp'].lower())
@@ -1093,7 +1096,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             d_params['vendor'] = sanitize_address(raw_params[6])
         elif d_event["operType_"] == 8:
             operation = 'TPSwapForTC'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsSwapTPforTC(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsSwapTPforTC(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['tp'] = sanitize_address(raw_params[0])
             if d_params['tp']:
                 d_params['tpIndex'] = self.contracts_addresses["TP"].index(d_params['tp'].lower())
@@ -1108,7 +1111,7 @@ class EventMocQueueOperationQueued(BaseEvent):
             d_params['vendor'] = sanitize_address(raw_params[6])
         elif d_event["operType_"] == 9:
             operation = 'TPSwapForTP'
-            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsSwapTPforTP(d_event["operId_"]).call()
+            raw_params = self.contracts_loaded["MocQueue"][self.bucket_index].sc.functions.operationsSwapTPforTP(d_event["operId_"]).call(block_identifier=queued_block)
             d_params['tpFrom'] = sanitize_address(raw_params[0])
             if d_params['tpFrom']:
                 d_params['tpFromIndex'] = self.contracts_addresses["TP"].index(d_params['tpFrom'].lower())
