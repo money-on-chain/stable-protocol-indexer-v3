@@ -40,6 +40,7 @@
     "IRegistry": "0xCD101a2414256DA8F8E25d7b483b3cf639a71683"
   },
   "contracts_white_list": [
+    "0xd99a43ba443068Ea539CeB623aE24e6C9910b975"
   ],
   "collateral": [
     {

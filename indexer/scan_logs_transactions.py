@@ -34,7 +34,23 @@ from .events import EventMocQueueTCMinted, \
     EventOMOCSupportersPayEarnings, \
     EventOMOCSupportersWithdraw, \
     EventOMOCSupportersWithdrawStake, \
+    EventOMOCVotingMachinePreVoteEvent, \
     EventOMOCVotingMachineVoteEvent, \
+    EventOMOCVotingMachinePreVoteStepEvent, \
+    EventOMOCVotingMachineVoteStepEvent, \
+    EventOMOCVotingMachineAcceptedStepEvent, \
+    EventOMOCVotingMachineUnregisterEvent, \
+    EventOMOCOracleManagerOracleRegistered, \
+    EventOMOCOracleManagerOracleStakeAdded, \
+    EventOMOCOracleManagerOracleSubscribed, \
+    EventOMOCOracleManagerOracleUnsubscribed, \
+    EventOMOCOracleManagerOracleRemoved, \
+    EventOMOCCoinPairPricePricePublished, \
+    EventOMOCCoinPairPriceEmergencyPricePublished, \
+    EventOMOCCoinPairPriceForcedPriceQueryModeSet, \
+    EventOMOCCoinPairPriceOracleRewardTransfer, \
+    EventOMOCCoinPairPriceNewRound, \
+    EventOMOCCoinPairPriceOracleAutoUnsubscribed, \
     EventMocMultiCollateralGuardMicroLiquidationExecuted, \
     EventMocMultiCollateralGuardPartialLiquidationExecuted, \
     EventMocMultiCollateralGuardBucketLiquidated, \
@@ -140,6 +156,18 @@ class ScanLogsTransactions:
         contracts_log_decoder[self.contracts_addresses['VotingMachine'].lower()] = LogDecoder(
             self.contracts_loaded['VotingMachine'].sc
         )
+
+        # OMOC decentralized oracles
+        if 'OracleManager' in self.contracts_addresses:
+
+            contracts_log_decoder[self.contracts_addresses['OracleManager'].lower()] = LogDecoder(
+                self.contracts_loaded['OracleManager'].sc
+            )
+
+            for cp_index, cp_address in enumerate(self.contracts_addresses['CoinPairPrice']):
+                contracts_log_decoder[cp_address.lower()] = LogDecoder(
+                    self.contracts_loaded['CoinPairPrice'][cp_index].sc
+                )
 
         return contracts_log_decoder
 
@@ -489,7 +517,42 @@ class ScanLogsTransactions:
         }
 
         d_event[self.contracts_addresses['VotingMachine'].lower()] = {
+            "PreVoteEvent": EventOMOCVotingMachinePreVoteEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
             "VoteEvent": EventOMOCVotingMachineVoteEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
+            "PreVoteStepEvent": EventOMOCVotingMachinePreVoteStepEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
+            "VoteStepEvent": EventOMOCVotingMachineVoteStepEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
+            "AcceptedStepEvent": EventOMOCVotingMachineAcceptedStepEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
+            "UnregisterEvent": EventOMOCVotingMachineUnregisterEvent(
                 self.options,
                 self.connection_helper,
                 self.contracts_loaded,
@@ -497,6 +560,106 @@ class ScanLogsTransactions:
                 self.filter_contracts_addresses,
                 self.block_info)
         }
+
+        # OMOC decentralized oracles
+        if 'OracleManager' in self.contracts_addresses:
+
+            d_event[self.contracts_addresses['OracleManager'].lower()] = {
+                "OracleRegistered": EventOMOCOracleManagerOracleRegistered(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info),
+                "OracleStakeAdded": EventOMOCOracleManagerOracleStakeAdded(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info),
+                "OracleSubscribed": EventOMOCOracleManagerOracleSubscribed(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info),
+                "OracleUnsubscribed": EventOMOCOracleManagerOracleUnsubscribed(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info),
+                "OracleRemoved": EventOMOCOracleManagerOracleRemoved(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info)
+            }
+
+            for cp_index, cp_address in enumerate(self.contracts_addresses['CoinPairPrice']):
+                coin_pair = getattr(self.contracts_loaded['CoinPairPrice'][cp_index], 'coin_pair', None)
+                d_event[cp_address.lower()] = {
+                    "PricePublished": EventOMOCCoinPairPricePricePublished(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "EmergencyPricePublished": EventOMOCCoinPairPriceEmergencyPricePublished(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "ForcedPriceQueryModeSet": EventOMOCCoinPairPriceForcedPriceQueryModeSet(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "OracleRewardTransfer": EventOMOCCoinPairPriceOracleRewardTransfer(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "NewRound": EventOMOCCoinPairPriceNewRound(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "OracleAutoUnsubscribed": EventOMOCCoinPairPriceOracleAutoUnsubscribed(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address)
+                }
 
         return d_event
 
