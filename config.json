@@ -1,11 +1,11 @@
 {
   "uri": "https://public-node.testnet.rsk.co",
-  "app_project": "flipmoney",
+  "app_project": "roc",
   "mongo": {
-    "uri": "mongodb://localhost:27017/",
-    "db": "flipago_testnet"
+    "uri": "SET_VIA_APP_MONGO_URI_ENV",
+    "db": "roc_v2_testnet"
   },
-  "debug": true,
+  "debug": false,
   "tasks": {
     "scan_raw_transactions": {"interval":  2},
     "scan_raw_transactions_confirming": {"interval":  2},
@@ -13,38 +13,39 @@
     "scan_tx_status": {"interval":  2}
   },
   "scan_logs": {
-    "confirm_blocks": 10,
+    "confirm_blocks": 30,
     "max_txs_to_process": 500
   },
   "scan_raw_transactions": {
-    "confirm_blocks": 10,
+    "confirm_blocks": 30,
     "blocks_recession": 1,
-    "from_block": 7009668,
+    "from_block": 7549480,
     "to_block": 0,
     "max_blocks_to_process": 100
   },
   "scan_raw_transactions_confirming": {
-    "confirm_blocks": 20,
+    "confirm_blocks": 30,
     "blocks_recession": 1,
-    "from_block": 7009668,
+    "from_block": 7549480,
     "to_block": 0,
     "max_blocks_to_process": 100
   },
   "scan_tx_status": {
     "seconds_not_in_chain_error": 600,
-    "confirm_blocks": 10
+    "confirm_blocks": 30
   },
   "addresses": {
     "Multicall2": "0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8",
-    "MocMultiCollateralGuard": "0x0E6B7d25f2fD1847423D782942027b2f2eaC6DF4",
-    "IRegistry": "0x8d7582f281B4c80673E8a4348f5aEbf8Df6F665F"
+    "MocMultiCollateralGuard": "0xBc3669954b4c513140294ECF9B7b540cf964f0a3",
+    "IRegistry": "0xf078375a3dD89dDF4D9dA460352199C6769b5f10",
+    "TasksRunner": "0x0E00baCDf5c6d6F51777998B4d7A660FD29e0fb6"
   },
   "contracts_white_list": [
-    "0xeD74d959A38866fCD280E8ADcF30b9BbeA971112"
+    "0x0E00baCDf5c6d6F51777998B4d7A660FD29e0fb6"
   ],
   "collateral": [
     {
-      "name": "BPRO",
+      "name": "RIF",
       "type": "rc20"
     },
     {
@@ -54,26 +55,23 @@
   ],
   "collateralToken": [
     {
-      "name": "BPROx"
+      "name": "RIFP"
     },
     {
-      "name": "DOCx"
+      "name": "ROCR"
     }
   ],
   "pegged": [
     {
-      "name": "ARS"
-    },
-    {
-      "name": "COP"
+      "name": "USDRIF"
     }
   ],
   "feeToken": [
     {
-      "name": "FLIP"
+      "name": "MOC"
     },
     {
-      "name": "FLIP"
+      "name": "MOC"
     }
   ]
 }
