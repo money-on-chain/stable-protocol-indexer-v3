@@ -10,7 +10,8 @@ from .tasks_manager import TasksManager
 from .logger import log
 from .contracts import Multicall2, MocMultiCollateralGuard, MocCARC20, MocCACoinbase, MocQueue, \
     OMOCDelayMachine, OMOCIncentiveV2, OMOCSupporters, OMOCVestingFactory, \
-    OMOCVotingMachine, OMOCIRegistry, OMOCOracleManager, OMOCCoinPairPrice
+    OMOCVotingMachine, OMOCIRegistry, OMOCOracleManager, OMOCCoinPairPrice, \
+    OMOCTasksRunner, OMOCTaskTriggerOrder
 from .scan_raw_transactions import ScanRawTxs
 from .scan_logs_transactions import ScanLogsTransactions
 from .scan_transactions_status import ScanTxStatus
@@ -184,6 +185,24 @@ class StableIndexerTasks(TasksManager):
                 self.config,
                 contract_address=self.config['addresses']['IncentiveV2'])
             self.contracts_addresses['IncentiveV2'] = self.contracts_loaded["IncentiveV2"].address().lower()
+
+        # TasksRunner (optional): no registry constant published, address comes from config
+        if self.config['addresses'].get('TasksRunner'):
+            log.info("TasksRunner using address: {0}".format(self.config['addresses']['TasksRunner'].lower()))
+            self.contracts_loaded["TasksRunner"] = OMOCTasksRunner(
+                self.connection_helper.connection_manager,
+                self.config,
+                contract_address=self.config['addresses']['TasksRunner'])
+            self.contracts_addresses['TasksRunner'] = self.contracts_loaded["TasksRunner"].address().lower()
+
+        # TaskTriggerOrder (optional): a mocFlow task run by TasksRunner, address comes from config
+        if self.config['addresses'].get('TaskTriggerOrder'):
+            log.info("TaskTriggerOrder using address: {0}".format(self.config['addresses']['TaskTriggerOrder'].lower()))
+            self.contracts_loaded["TaskTriggerOrder"] = OMOCTaskTriggerOrder(
+                self.connection_helper.connection_manager,
+                self.config,
+                contract_address=self.config['addresses']['TaskTriggerOrder'])
+            self.contracts_addresses['TaskTriggerOrder'] = self.contracts_loaded["TaskTriggerOrder"].address().lower()
 
         # DelayMachine
         log.info("DelayMachine using address: {0}".format(self.contracts_addresses['DelayMachine'].lower()))
