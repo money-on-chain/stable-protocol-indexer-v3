@@ -2,18 +2,21 @@ from pymongo import ASCENDING, DESCENDING
 import os
 import json
 
+from web3 import Web3
+
 from .base.main import ConnectionHelperMongo
 from .base.token import ERC20Token
 from .tasks_manager import TasksManager
 from .logger import log
 from .contracts import Multicall2, MocMultiCollateralGuard, MocCARC20, MocCACoinbase, MocQueue, \
     OMOCDelayMachine, OMOCIncentiveV2, OMOCSupporters, OMOCVestingFactory, \
-    OMOCVotingMachine, OMOCIRegistry
+    OMOCVotingMachine, OMOCIRegistry, OMOCOracleManager, OMOCCoinPairPrice, \
+    OMOCTasksRunner, OMOCTaskTriggerOrder
 from .scan_raw_transactions import ScanRawTxs
 from .scan_logs_transactions import ScanLogsTransactions
 from .scan_transactions_status import ScanTxStatus
 
-__VERSION__ = '4.3.8'
+__VERSION__ = '4.3.9'
 
 log.info("Starting Protocol Indexer version {0}".format(__VERSION__))
 
@@ -183,6 +186,24 @@ class StableIndexerTasks(TasksManager):
                 contract_address=self.config['addresses']['IncentiveV2'])
             self.contracts_addresses['IncentiveV2'] = self.contracts_loaded["IncentiveV2"].address().lower()
 
+        # TasksRunner (optional): no registry constant published, address comes from config
+        if self.config['addresses'].get('TasksRunner'):
+            log.info("TasksRunner using address: {0}".format(self.config['addresses']['TasksRunner'].lower()))
+            self.contracts_loaded["TasksRunner"] = OMOCTasksRunner(
+                self.connection_helper.connection_manager,
+                self.config,
+                contract_address=self.config['addresses']['TasksRunner'])
+            self.contracts_addresses['TasksRunner'] = self.contracts_loaded["TasksRunner"].address().lower()
+
+        # TaskTriggerOrder (optional): a mocFlow task run by TasksRunner, address comes from config
+        if self.config['addresses'].get('TaskTriggerOrder'):
+            log.info("TaskTriggerOrder using address: {0}".format(self.config['addresses']['TaskTriggerOrder'].lower()))
+            self.contracts_loaded["TaskTriggerOrder"] = OMOCTaskTriggerOrder(
+                self.connection_helper.connection_manager,
+                self.config,
+                contract_address=self.config['addresses']['TaskTriggerOrder'])
+            self.contracts_addresses['TaskTriggerOrder'] = self.contracts_loaded["TaskTriggerOrder"].address().lower()
+
         # DelayMachine
         log.info("DelayMachine using address: {0}".format(self.contracts_addresses['DelayMachine'].lower()))
         self.contracts_loaded["DelayMachine"] = OMOCDelayMachine(
@@ -211,6 +232,43 @@ class StableIndexerTasks(TasksManager):
             self.config,
             contract_address=self.contracts_addresses['VotingMachine'])
         self.contracts_addresses['VotingMachine'] = self.contracts_loaded["VotingMachine"].address().lower()
+
+        # OracleManager
+        oracle_manager_address = self.contracts_loaded["IRegistry"].sc.functions.getAddress(
+            omoc['RegistryConstants']['ORACLE_MANAGER_ADDR']).call().lower()
+        log.info("OracleManager using address: {0}".format(oracle_manager_address))
+        self.contracts_loaded["OracleManager"] = OMOCOracleManager(
+            self.connection_helper.connection_manager,
+            self.config,
+            contract_address=oracle_manager_address)
+        self.contracts_addresses['OracleManager'] = oracle_manager_address
+
+        # CoinPairPrice: one contract per registered coin pair
+        self.contracts_loaded["CoinPairPrice"] = list()
+        self.contracts_addresses['CoinPairPrice'] = list()
+        self.contracts_coin_pairs = list()
+
+        zero_address = '0x0000000000000000000000000000000000000000'
+        coin_pair_count = self.contracts_loaded["OracleManager"].coin_pair_count()
+        for i in range(coin_pair_count):
+            coin_pair = self.contracts_loaded["OracleManager"].coin_pair_at_index(i)
+            cp_address = self.contracts_loaded["OracleManager"].contract_address_of(coin_pair).lower()
+            if cp_address == zero_address:
+                # deleted coin pair
+                continue
+            try:
+                coin_pair_name = Web3.to_text(coin_pair).rstrip('\x00')
+            except Exception:
+                coin_pair_name = coin_pair.hex() if hasattr(coin_pair, 'hex') else str(coin_pair)
+            log.info("CoinPairPrice ({0}) using address: {1}".format(coin_pair_name, cp_address))
+            cp_contract = OMOCCoinPairPrice(
+                self.connection_helper.connection_manager,
+                self.config,
+                contract_address=cp_address)
+            cp_contract.coin_pair = coin_pair_name
+            self.contracts_loaded["CoinPairPrice"].append(cp_contract)
+            self.contracts_addresses['CoinPairPrice'].append(cp_address)
+            self.contracts_coin_pairs.append(coin_pair_name)
 
         self.filter_contracts_addresses = []
         for k, v in self.contracts_addresses.items():

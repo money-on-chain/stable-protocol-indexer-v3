@@ -34,7 +34,25 @@ from .events import EventMocQueueTCMinted, \
     EventOMOCSupportersPayEarnings, \
     EventOMOCSupportersWithdraw, \
     EventOMOCSupportersWithdrawStake, \
+    EventOMOCVotingMachinePreVoteEvent, \
     EventOMOCVotingMachineVoteEvent, \
+    EventOMOCVotingMachinePreVoteStepEvent, \
+    EventOMOCVotingMachineVoteStepEvent, \
+    EventOMOCVotingMachineAcceptedStepEvent, \
+    EventOMOCVotingMachineUnregisterEvent, \
+    EventOMOCOracleManagerOracleRegistered, \
+    EventOMOCOracleManagerOracleStakeAdded, \
+    EventOMOCOracleManagerOracleSubscribed, \
+    EventOMOCOracleManagerOracleUnsubscribed, \
+    EventOMOCOracleManagerOracleRemoved, \
+    EventOMOCCoinPairPricePricePublished, \
+    EventOMOCCoinPairPriceEmergencyPricePublished, \
+    EventOMOCCoinPairPriceForcedPriceQueryModeSet, \
+    EventOMOCCoinPairPriceOracleRewardTransfer, \
+    EventOMOCCoinPairPriceNewRound, \
+    EventOMOCCoinPairPriceOracleAutoUnsubscribed, \
+    EventOMOCTasksRunnerTaskExecuted, \
+    EventOMOCTaskTriggerOrderTriggerOrdersReverted, \
     EventMocMultiCollateralGuardMicroLiquidationExecuted, \
     EventMocMultiCollateralGuardPartialLiquidationExecuted, \
     EventMocMultiCollateralGuardBucketLiquidated, \
@@ -140,6 +158,32 @@ class ScanLogsTransactions:
         contracts_log_decoder[self.contracts_addresses['VotingMachine'].lower()] = LogDecoder(
             self.contracts_loaded['VotingMachine'].sc
         )
+
+        # OMOC decentralized oracles
+        if 'OracleManager' in self.contracts_addresses:
+
+            contracts_log_decoder[self.contracts_addresses['OracleManager'].lower()] = LogDecoder(
+                self.contracts_loaded['OracleManager'].sc
+            )
+
+            for cp_index, cp_address in enumerate(self.contracts_addresses['CoinPairPrice']):
+                contracts_log_decoder[cp_address.lower()] = LogDecoder(
+                    self.contracts_loaded['CoinPairPrice'][cp_index].sc
+                )
+
+        # TasksRunner / TaskTriggerOrder: registered last and merged, because the
+        # OMOC deployment also lists TasksRunner in OracleManager as a coin pair,
+        # so its address already carries a CoinPairPrice decoder above. Merge the
+        # topic maps so both ABIs' events decode from the shared address instead of
+        # the last registration winning.
+        for key in ('TasksRunner', 'TaskTriggerOrder'):
+            if key in self.contracts_addresses:
+                addr = self.contracts_addresses[key].lower()
+                extra = LogDecoder(self.contracts_loaded[key].sc)
+                if addr in contracts_log_decoder:
+                    contracts_log_decoder[addr].topic_map.update(extra.topic_map)
+                else:
+                    contracts_log_decoder[addr] = extra
 
         return contracts_log_decoder
 
@@ -489,7 +533,42 @@ class ScanLogsTransactions:
         }
 
         d_event[self.contracts_addresses['VotingMachine'].lower()] = {
+            "PreVoteEvent": EventOMOCVotingMachinePreVoteEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
             "VoteEvent": EventOMOCVotingMachineVoteEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
+            "PreVoteStepEvent": EventOMOCVotingMachinePreVoteStepEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
+            "VoteStepEvent": EventOMOCVotingMachineVoteStepEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
+            "AcceptedStepEvent": EventOMOCVotingMachineAcceptedStepEvent(
+                self.options,
+                self.connection_helper,
+                self.contracts_loaded,
+                self.contracts_addresses,
+                self.filter_contracts_addresses,
+                self.block_info),
+            "UnregisterEvent": EventOMOCVotingMachineUnregisterEvent(
                 self.options,
                 self.connection_helper,
                 self.contracts_loaded,
@@ -497,6 +576,131 @@ class ScanLogsTransactions:
                 self.filter_contracts_addresses,
                 self.block_info)
         }
+
+        # OMOC decentralized oracles
+        if 'OracleManager' in self.contracts_addresses:
+
+            d_event[self.contracts_addresses['OracleManager'].lower()] = {
+                "OracleRegistered": EventOMOCOracleManagerOracleRegistered(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info),
+                "OracleStakeAdded": EventOMOCOracleManagerOracleStakeAdded(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info),
+                "OracleSubscribed": EventOMOCOracleManagerOracleSubscribed(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info),
+                "OracleUnsubscribed": EventOMOCOracleManagerOracleUnsubscribed(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info),
+                "OracleRemoved": EventOMOCOracleManagerOracleRemoved(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info)
+            }
+
+            for cp_index, cp_address in enumerate(self.contracts_addresses['CoinPairPrice']):
+                coin_pair = getattr(self.contracts_loaded['CoinPairPrice'][cp_index], 'coin_pair', None)
+                d_event[cp_address.lower()] = {
+                    "PricePublished": EventOMOCCoinPairPricePricePublished(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "EmergencyPricePublished": EventOMOCCoinPairPriceEmergencyPricePublished(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "ForcedPriceQueryModeSet": EventOMOCCoinPairPriceForcedPriceQueryModeSet(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "OracleRewardTransfer": EventOMOCCoinPairPriceOracleRewardTransfer(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "NewRound": EventOMOCCoinPairPriceNewRound(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address),
+                    "OracleAutoUnsubscribed": EventOMOCCoinPairPriceOracleAutoUnsubscribed(
+                        self.options,
+                        self.connection_helper,
+                        self.contracts_loaded,
+                        self.contracts_addresses,
+                        self.filter_contracts_addresses,
+                        self.block_info,
+                        coin_pair,
+                        cp_address)
+                }
+
+        # TasksRunner / TaskTriggerOrder: registered last and merged into whatever
+        # is already mapped for the address. TasksRunner is also listed in
+        # OracleManager as a coin pair, so its address already holds the
+        # CoinPairPrice handlers (NewRound / OracleRewardTransfer, which it does
+        # emit as a RoundManager); this just adds TaskExecuted on top.
+        if 'TasksRunner' in self.contracts_addresses:
+            d_event.setdefault(self.contracts_addresses['TasksRunner'].lower(), {})["TaskExecuted"] = \
+                EventOMOCTasksRunnerTaskExecuted(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info)
+
+        if 'TaskTriggerOrder' in self.contracts_addresses:
+            d_event.setdefault(self.contracts_addresses['TaskTriggerOrder'].lower(), {})["TriggerOrdersReverted"] = \
+                EventOMOCTaskTriggerOrderTriggerOrdersReverted(
+                    self.options,
+                    self.connection_helper,
+                    self.contracts_loaded,
+                    self.contracts_addresses,
+                    self.filter_contracts_addresses,
+                    self.block_info)
 
         return d_event
 

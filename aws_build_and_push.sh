@@ -53,6 +53,12 @@ docker image build -t indexer_v2_$ENV -f Dockerfile --build-arg CONFIG=$CONFIG_F
 
 echo "Build done!"
 
+# login into aws ecr (get-login was removed in AWS CLI v2)
+aws ecr get-login-password --region $AWS_REGION | \
+    docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+echo "Logging to AWS done!"
+
 docker tag indexer_v2_$ENV:latest $AWS_ID.dkr.ecr.$AWS_REGION.amazonaws.com/indexer_v2_$ENV:latest
 
 docker push $AWS_ID.dkr.ecr.$AWS_REGION.amazonaws.com/indexer_v2_$ENV:latest
