@@ -56,7 +56,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pymongo.errors import AutoReconnect
+from pymongo.errors import AutoReconnect, WriteError
 from web3 import Web3
 
 from indexer.tasks import StableIndexerTasks
@@ -195,14 +195,41 @@ def block_timestamp(connection_manager, cache, block_number):
     return cache[block_number]
 
 
+# SDAM spec "not primary" / "node is recovering" write-command error codes. A step-down
+# or election mid-write surfaces as a WriteError carrying one of these (NotPrimaryError,
+# a subclass of AutoReconnect, is already covered by the except clause below).
+_NOT_PRIMARY_CODES = frozenset([
+    10058,  # LegacyNotPrimary
+    10107,  # NotWritablePrimary
+    13435,  # NotPrimaryNoSecondaryOk
+    11602,  # InterruptedDueToReplStateChange
+    13436,  # NotPrimaryOrSecondary
+    189,    # PrimarySteppedDown
+    91,     # ShutdownInProgress
+    11600,  # InterruptedAtShutdown
+])
+
+
 def with_mongo_retries(what, fn, retries=5):
     """Run fn() with retries on transient replica-set errors (step-down / election
-    mid-write -> AutoReconnect / NotPrimaryError). All mongo writes here are
-    upserts, so redoing one after a failed attempt is safe."""
+    mid-write -> AutoReconnect / NotPrimaryError, or a WriteError carrying one of the
+    codes in _NOT_PRIMARY_CODES). All mongo writes here are upserts, so redoing one
+    after a failed attempt is safe."""
     attempt = 0
     while True:
         try:
             return fn()
+        except WriteError as exc:
+            if exc.code not in _NOT_PRIMARY_CODES:
+                raise
+            attempt += 1
+            if attempt > retries:
+                raise
+            wait = min(30, 2 ** attempt)
+            log.warning(
+                "{0} failed ({1}); retry {2}/{3} in {4}s".format(what, exc, attempt, retries, wait)
+            )
+            time.sleep(wait)
         except AutoReconnect as exc:
             attempt += 1
             if attempt > retries:
