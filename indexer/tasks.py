@@ -16,7 +16,7 @@ from .scan_raw_transactions import ScanRawTxs
 from .scan_logs_transactions import ScanLogsTransactions
 from .scan_transactions_status import ScanTxStatus
 
-__VERSION__ = '4.3.9'
+__VERSION__ = '4.3.10'
 
 log.info("Starting Protocol Indexer version {0}".format(__VERSION__))
 
@@ -290,6 +290,47 @@ class StableIndexerTasks(TasksManager):
         self.connection_helper.create_index('operations', index_map, unique=False)
 
         index_map = [('createdAt', DESCENDING)]
+        self.connection_helper.create_index('operations', index_map, unique=False)
+
+        # Case-insensitive address lookups (API's operations_list $or: params.{recipient,sender}
+        # and executed.{recipient_,sender_} - stored checksummed, queried lowercased) require
+        # the index to carry the same collation as the query, or Mongo falls back to a full
+        # collection scan.
+        address_collation = {"locale": "en", "strength": 2}
+
+        index_map = [('params.recipient', ASCENDING)]
+        self.connection_helper.create_index(
+            'operations', index_map, unique=False, collation=address_collation)
+
+        index_map = [('params.sender', ASCENDING)]
+        self.connection_helper.create_index(
+            'operations', index_map, unique=False, collation=address_collation)
+
+        index_map = [('executed.recipient_', ASCENDING)]
+        self.connection_helper.create_index(
+            'operations', index_map, unique=False, collation=address_collation)
+
+        index_map = [('executed.sender_', ASCENDING)]
+        self.connection_helper.create_index(
+            'operations', index_map, unique=False, collation=address_collation)
+
+        # Raw transactions collection: hash lookups (dedup / status checks) were
+        # doing a full collection scan.
+        index_map = [('hash', ASCENDING)]
+        self.connection_helper.create_index('raw_transactions', index_map, unique=False)
+
+        # OMOC address-filtered API lookups (api/routers/omoc.py): same checksummed-vs-lowercased
+        # mismatch as operations above, same collation requirement.
+        index_map = [('holder', ASCENDING)]
+        self.connection_helper.create_index(
+            'event_VestingFactory_VestingCreated', index_map, unique=False, collation=address_collation)
+
+        index_map = [('recipient', ASCENDING)]
+        self.connection_helper.create_index(
+            'event_IncentiveV2_ClaimOK', index_map, unique=False, collation=address_collation)
+
+        # API's queued_opers filters on status + operation with no index on either.
+        index_map = [('status', ASCENDING), ('operation', ASCENDING)]
         self.connection_helper.create_index('operations', index_map, unique=False)
 
     def schedule_tasks(self):

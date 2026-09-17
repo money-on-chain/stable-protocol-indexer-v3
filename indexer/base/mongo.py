@@ -34,7 +34,7 @@ class MongoManager:
 
         return collection
 
-    def create_index(self, client, collection_name, index_map, unique=False):
+    def create_index(self, client, collection_name, index_map, unique=False, collation=None):
         # index_map: [("field_to_index", ASCENDING)]
 
         collection = self.get_collection(client, collection_name)
@@ -45,7 +45,10 @@ class MongoManager:
                 break
 
         if create:
-            collection.create_index(index_map, unique=unique)
+            kwargs = dict(unique=unique)
+            if collation:
+                kwargs["collation"] = collation
+            collection.create_index(index_map, **kwargs)
         else:
             log.error("Cannot create index already exist collection indexing!")
 
