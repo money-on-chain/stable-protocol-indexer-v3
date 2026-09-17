@@ -38,11 +38,19 @@ class MongoManager:
         # index_map: [("field_to_index", ASCENDING)]
 
         collection = self.get_collection(client, collection_name)
-        create = True
-        for index in index_map:
-            if index[0] in collection.index_information():
-                create = False
-                break
+
+        # Match by key pattern, not name: index_information() keys are index NAMES
+        # (e.g. "recipient_ci" or the auto-generated "params.recipient_1"), which
+        # never equal a bare field name, so a name-string check never detects an
+        # existing index and every restart re-attempts creation. Mongo itself then
+        # rejects that as IndexOptionsConflict (code 85) whenever the existing index
+        # happens to carry a different (often hand-picked) name than the one we'd
+        # auto-generate, even though the key spec is identical - which is exactly
+        # what was crashing startup here.
+        target_key = list(index_map)
+        create = not any(
+            info.get("key") == target_key for info in collection.index_information().values()
+        )
 
         if create:
             kwargs = dict(unique=unique)
@@ -66,7 +74,7 @@ class MongoManager:
                 else:
                     raise
         else:
-            log.error("Cannot create index already exist collection indexing!")
+            log.info("Index on {0}.{1} already exists, skipping.".format(collection_name, target_key))
 
 
 mongo_manager = MongoManager()
