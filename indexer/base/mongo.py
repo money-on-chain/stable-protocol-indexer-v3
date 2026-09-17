@@ -48,7 +48,23 @@ class MongoManager:
             kwargs = dict(unique=unique)
             if collation:
                 kwargs["collation"] = collation
-            collection.create_index(index_map, **kwargs)
+            try:
+                collection.create_index(index_map, **kwargs)
+            except pymongo.errors.OperationFailure as exc:
+                # code 85 IndexOptionsConflict / 86 IndexKeySpecsConflict: an index on
+                # the same key(s) already exists with different options (e.g. a prior
+                # index created without this collation). Creating an index is setup,
+                # not a request that should be able to take the whole service down;
+                # log it and move on so one stale/conflicting index doesn't block
+                # every other collection's indexing and the rest of startup.
+                if exc.code in (85, 86):
+                    log.error(
+                        "Index on {0}.{1} conflicts with an existing index (code {2}): {3}. "
+                        "Skipping - drop the conflicting index manually if you want this "
+                        "definition applied.".format(collection_name, index_map, exc.code, exc)
+                    )
+                else:
+                    raise
         else:
             log.error("Cannot create index already exist collection indexing!")
 
