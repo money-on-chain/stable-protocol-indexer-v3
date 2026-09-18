@@ -14,10 +14,10 @@ COPY app_run_indexer.py ./
 COPY $CONFIG ./config.json
 COPY indexer/ ./indexer/
 
-ENV PATH "$PATH:/home/www-data/app/"
+ENV PATH="$PATH:/home/www-data/app/"
 ENV AWS_DEFAULT_REGION=us-west-1
 
-ENV PYTHONPATH "${PYTHONPATH}:/home/www-data/app/"
+ENV PYTHONPATH="/home/www-data/app/"
 
 USER appuser
 

@@ -36,6 +36,7 @@ class ConnectionHelperMongo(ConnectionHelperBase):
 
         return mongo_manager.get_collection(self.m_client, collection_name)
 
-    def create_index(self, collection_name, index_map, unique=False):
+    def create_index(self, collection_name, index_map, unique=False, collation=None):
 
-        return mongo_manager.create_index(self.m_client, collection_name, index_map, unique=unique)
+        return mongo_manager.create_index(
+            self.m_client, collection_name, index_map, unique=unique, collation=collation)
