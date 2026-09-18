@@ -50,4 +50,8 @@ if __name__ == '__main__':
         )
 
     indexer_tasks = StableIndexerTasks(config)
+    # operations / raw_transactions are core-indexer-only collections the OMOC
+    # backfill never touches, so this stays out of StableIndexerTasks.__init__
+    # (shared by both) and lives here instead.
+    indexer_tasks.create_core_mongo_index()
     indexer_tasks.start_loop()

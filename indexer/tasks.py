@@ -16,9 +16,48 @@ from .scan_raw_transactions import ScanRawTxs
 from .scan_logs_transactions import ScanLogsTransactions
 from .scan_transactions_status import ScanTxStatus
 
-__VERSION__ = '4.3.12'
+__VERSION__ = '4.3.13'
 
 log.info("Starting Protocol Indexer version {0}".format(__VERSION__))
+
+
+# Every collection an OMOC event handler in events.py may write. Every write
+# there is an upsert on id_event, plus a legacy hash-only-doc existence check
+# on hash - without indexes on both, insert throughput decays as each
+# collection grows (moved here from scripts/backfill_omoc.py so the live
+# indexer's own startup gets these too, not just a backfill run).
+OMOC_EVENT_COLLECTIONS = [
+    "event_IncentiveV2_ClaimOK",
+    "event_VestingFactory_VestingCreated",
+    "event_DelayMachine_PaymentCancel",
+    "event_DelayMachine_PaymentDeposit",
+    "event_DelayMachine_PaymentWithdraw",
+    "event_Supporters_AddStake",
+    "event_Supporters_CancelEarnings",
+    "event_Supporters_PayEarnings",
+    "event_Supporters_Withdraw",
+    "event_Supporters_WithdrawStake",
+    "event_VotingMachine_PreVoteEvent",
+    "event_VotingMachine_VoteEvent",
+    "event_VotingMachine_PreVoteStepEvent",
+    "event_VotingMachine_VoteStepEvent",
+    "event_VotingMachine_AcceptedStepEvent",
+    "event_VotingMachine_UnregisterEvent",
+    "event_OracleManager_OracleRegistered",
+    "event_OracleManager_OracleStakeAdded",
+    "event_OracleManager_OracleSubscribed",
+    "event_OracleManager_OracleUnsubscribed",
+    "event_OracleManager_OracleRemoved",
+    "event_CoinPairPrice_PricePublished",
+    "event_CoinPairPrice_EmergencyPricePublished",
+    "event_CoinPairPrice_ForcedPriceQueryModeSet",
+    "event_CoinPairPrice_OracleRewardTransfer",
+    "event_CoinPairPrice_NewRound",
+    "event_CoinPairPrice_OracleAutoUnsubscribed",
+    "event_TasksRunner_TaskExecuted",
+    "event_TaskTriggerOrder_TriggerOrdersReverted",
+    "omoc_operations",
+]
 
 
 def read_omoc_json_file(filename=None):
@@ -48,6 +87,9 @@ class StableIndexerTasks(TasksManager):
 
         # load contracts
         self.load_contracts()
+
+        if 'IRegistry' in self.contracts_addresses:
+            self.create_omoc_mongo_index()
 
         # Add tasks
         self.schedule_tasks()
@@ -283,7 +325,13 @@ class StableIndexerTasks(TasksManager):
         for white_address in self.config['contracts_white_list']:
             self.filter_contracts_addresses.append(white_address.lower())
 
-    def create_mongo_index(self):
+    def create_core_mongo_index(self):
+        """Indexes for the core (non-OMOC) collections: operations / raw_transactions.
+
+        Deliberately NOT called from __init__ - scripts/backfill_omoc.py also
+        constructs a StableIndexerTasks, and its whole premise is that it never
+        touches operations / raw_transactions / moc_indexer. Only
+        app_run_indexer.py (the live indexer's actual entry point) calls this."""
 
         # Operations collection
         index_map = [('operId_', DESCENDING)]
@@ -314,10 +362,27 @@ class StableIndexerTasks(TasksManager):
         self.connection_helper.create_index(
             'operations', index_map, unique=False, collation=address_collation)
 
+        # API's queued_opers filters on status + operation with no index on either.
+        index_map = [('status', ASCENDING), ('operation', ASCENDING)]
+        self.connection_helper.create_index('operations', index_map, unique=False)
+
         # Raw transactions collection: hash lookups (dedup / status checks) were
         # doing a full collection scan.
         index_map = [('hash', ASCENDING)]
         self.connection_helper.create_index('raw_transactions', index_map, unique=False)
+
+        # scan_logs_transactions.py's scan_events_txs(): find({"processed": False},
+        # sort=[("blockNumber", 1)]) polls this exact filter+sort shape forever,
+        # whether or not there's anything left to process - without this compound,
+        # every poll full-scans the collection to return nothing.
+        index_map = [('processed', ASCENDING), ('blockNumber', ASCENDING)]
+        self.connection_helper.create_index('raw_transactions', index_map, unique=False)
+
+    def create_omoc_mongo_index(self):
+        """Indexes for the OMOC event collections - safe for both the live indexer
+        and the backfill script to ensure, since both legitimately write these."""
+
+        address_collation = {"locale": "en", "strength": 2}
 
         # OMOC address-filtered API lookups (api/routers/omoc.py): same checksummed-vs-lowercased
         # mismatch as operations above, same collation requirement.
@@ -329,9 +394,12 @@ class StableIndexerTasks(TasksManager):
         self.connection_helper.create_index(
             'event_IncentiveV2_ClaimOK', index_map, unique=False, collation=address_collation)
 
-        # API's queued_opers filters on status + operation with no index on either.
-        index_map = [('status', ASCENDING), ('operation', ASCENDING)]
-        self.connection_helper.create_index('operations', index_map, unique=False)
+        # Write-side idempotency for every OMOC event collection (id_event is the
+        # upsert key, hash backs the legacy-doc cleanup check) - see
+        # OMOC_EVENT_COLLECTIONS above.
+        for name in OMOC_EVENT_COLLECTIONS:
+            self.connection_helper.create_index(name, [('id_event', ASCENDING)], unique=False)
+            self.connection_helper.create_index(name, [('hash', ASCENDING)], unique=False)
 
     def schedule_tasks(self):
 
@@ -339,9 +407,6 @@ class StableIndexerTasks(TasksManager):
 
         # set max workers
         self.max_workers = 1
-
-        log.info("Creating mongo collection index...")
-        self.create_mongo_index()
 
         # 1. Scan Raw Transactions
         if 'scan_raw_transactions' in self.config['tasks']:
