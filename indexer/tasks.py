@@ -11,7 +11,7 @@ from .logger import log
 from .contracts import Multicall2, MocMultiCollateralGuard, MocCARC20, MocCACoinbase, MocQueue, \
     OMOCDelayMachine, OMOCIncentiveV2, OMOCSupporters, OMOCVestingFactory, \
     OMOCVotingMachine, OMOCIRegistry, OMOCOracleManager, OMOCCoinPairPrice, \
-    OMOCTasksRunner, OMOCTaskTriggerOrder
+    OMOCTasksRunner, OMOCTaskTriggerOrder, MocLendingManager
 from .scan_raw_transactions import ScanRawTxs
 from .scan_logs_transactions import ScanLogsTransactions
 from .scan_transactions_status import ScanTxStatus
@@ -275,6 +275,16 @@ class StableIndexerTasks(TasksManager):
             contract_address=self.contracts_addresses['VotingMachine'])
         self.contracts_addresses['VotingMachine'] = self.contracts_loaded["VotingMachine"].address().lower()
 
+        # MocLendingManager (optional — only loaded when address is provided in config)
+        if self.config['addresses'].get('MocLendingManager'):
+            lending_address = self.config['addresses']['MocLendingManager']
+            log.info("MocLendingManager using address: {0}".format(lending_address.lower()))
+            self.contracts_loaded["MocLendingManager"] = MocLendingManager(
+                self.connection_helper.connection_manager,
+                contract_address=lending_address)
+            self.contracts_addresses['MocLendingManager'] = self.contracts_loaded[
+                "MocLendingManager"].address().lower()
+
         # OracleManager
         oracle_manager_address = self.contracts_loaded["IRegistry"].sc.functions.getAddress(
             omoc['RegistryConstants']['ORACLE_MANAGER_ADDR']).call().lower()
@@ -339,6 +349,37 @@ class StableIndexerTasks(TasksManager):
 
         index_map = [('createdAt', DESCENDING)]
         self.connection_helper.create_index('operations', index_map, unique=False)
+
+        # Lending user operations collection
+        self.connection_helper.create_index('lending_user_operations', [('id_event', ASCENDING)], unique=True)
+        self.connection_helper.create_index('lending_user_operations', [('user', ASCENDING), ('blockNumber', DESCENDING), ('_id', DESCENDING)], unique=False)
+        self.connection_helper.create_index('lending_user_operations', [('blockNumber', DESCENDING), ('_id', DESCENDING)], unique=False)
+        self.connection_helper.create_index('lending_user_operations', [('operId', ASCENDING)], unique=False)
+
+        # Lending event collections: id_event / hash back the indexer's upserts,
+        # blockNumber (alone and paired with each API filter field) backs the
+        # API listings sorted by blockNumber desc.
+        lending_filter_fields = {
+            'event_Lending_Deposit': ['user', 'recipient'],
+            'event_Lending_Withdraw': ['user', 'recipient'],
+            'event_Lending_AddACtoVault': ['user', 'recipient'],
+            'event_Lending_RemoveACfromVault': ['user', 'recipient'],
+            'event_Lending_Borrow': ['user', 'recipient'],
+            'event_Lending_Repay': ['user', 'recipient'],
+            'event_Lending_RepayWithAC': ['user'],
+            'event_Lending_Liquidate': ['user', 'liquidator'],
+            'event_Lending_TPInjection': [],
+            'event_Lending_OperationQueued': ['user', 'recipient'],
+            'event_Lending_OperationError': ['operId'],
+            'event_Lending_OperationExecuted': ['operId'],
+        }
+        for collection_name, filter_fields in lending_filter_fields.items():
+            self.connection_helper.create_index(collection_name, [('id_event', ASCENDING)], unique=False)
+            self.connection_helper.create_index(collection_name, [('hash', ASCENDING)], unique=False)
+            self.connection_helper.create_index(collection_name, [('blockNumber', DESCENDING), ('_id', DESCENDING)], unique=False)
+            for field in filter_fields:
+                self.connection_helper.create_index(
+                    collection_name, [(field, ASCENDING), ('blockNumber', DESCENDING), ('_id', DESCENDING)], unique=False)
 
         # Case-insensitive address lookups (API's operations_list $or: params.{recipient,sender}
         # and executed.{recipient_,sender_} - stored checksummed, queried lowercased) require

@@ -229,7 +229,7 @@ def purge_reorged_block(connection_helper, block_number):
 
     Compares the blockHash stored in raw_transactions against the canonical hash
     reported by the node. On mismatch, deletes orphaned raw_transactions and all
-    derived records (operations, omoc_operations, event_*) by tx hash.
+    derived records (operations, omoc_operations, lending_user_operations, event_*) by tx hash.
 
     Returns True if a reorg was detected and purged.
     """
@@ -255,7 +255,7 @@ def purge_reorged_block(connection_helper, block_number):
 
     db = connection_helper.m_client[connection_helper.config['mongo']['db']]
     for coll_name in db.list_collection_names():
-        if coll_name in ('operations', 'omoc_operations') or coll_name.startswith('event_'):
+        if coll_name in ('operations', 'omoc_operations', 'lending_user_operations') or coll_name.startswith('event_'):
             result = db[coll_name].delete_many({"hash": {"$in": orphaned_hashes}})
             if result.deleted_count:
                 log.warning("[Reorg] Purged {0} record(s) from '{1}'".format(
