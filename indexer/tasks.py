@@ -442,6 +442,21 @@ class StableIndexerTasks(TasksManager):
             self.connection_helper.create_index(
                 'omoc_operations', index_map, unique=False, collation=address_collation)
 
+        # /v1/omoc/voting/ rebuilds proposal records per (proposal, round) and a
+        # user's history per (user, round). Both addresses are stored lowercased
+        # and queried lowercased, so these need no collation.
+        for name in ('event_VotingMachine_PreVoteEvent',
+                     'event_VotingMachine_VoteEvent',
+                     'event_VotingMachine_PreVoteStepEvent',
+                     'event_VotingMachine_VoteStepEvent',
+                     'event_VotingMachine_AcceptedStepEvent',
+                     'event_VotingMachine_UnregisterEvent'):
+            self.connection_helper.create_index(
+                name, [('proposal', ASCENDING), ('round', DESCENDING)], unique=False)
+        for name in ('event_VotingMachine_PreVoteEvent', 'event_VotingMachine_VoteEvent'):
+            self.connection_helper.create_index(
+                name, [('user', ASCENDING), ('round', DESCENDING)], unique=False)
+
         # Write-side idempotency for every OMOC event collection (id_event is the
         # upsert key, hash backs the legacy-doc cleanup check) - see
         # OMOC_EVENT_COLLECTIONS above.
