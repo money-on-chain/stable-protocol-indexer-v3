@@ -435,6 +435,13 @@ class StableIndexerTasks(TasksManager):
         self.connection_helper.create_index(
             'event_IncentiveV2_ClaimOK', index_map, unique=False, collation=address_collation)
 
+        # /v1/omoc/staking_operations/ "$or"s the staker address against `subaccount`
+        # (Supporters_*) and `destination` (DelayMachine_*), sorted by createdAt desc.
+        for field in ('subaccount', 'destination'):
+            index_map = [(field, ASCENDING), ('createdAt', DESCENDING)]
+            self.connection_helper.create_index(
+                'omoc_operations', index_map, unique=False, collation=address_collation)
+
         # Write-side idempotency for every OMOC event collection (id_event is the
         # upsert key, hash backs the legacy-doc cleanup check) - see
         # OMOC_EVENT_COLLECTIONS above.
